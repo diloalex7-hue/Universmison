@@ -28,6 +28,14 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminPromotions from "./pages/admin/AdminPromotions";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
+import AdminPages from "./pages/admin/AdminPages";
+import AdminHero from "./pages/admin/AdminHero";
+import AdminMessages from "./pages/admin/AdminMessages";
+
+import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -39,12 +47,19 @@ const App = () => (
           <Toaster />
           <Sonner position="top-center" />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="orders" element={<AdminOrders />} />
+                <Route path="promotions" element={<AdminPromotions />} />
+                <Route path="hero" element={<AdminHero />} />
+                <Route path="testimonials" element={<AdminTestimonials />} />
+                <Route path="messages" element={<AdminMessages />} />
+                <Route path="pages" element={<AdminPages />} />
+                <Route path="settings" element={<AdminSettings />} />
               </Route>
               <Route path="*" element={
                 <Layout>

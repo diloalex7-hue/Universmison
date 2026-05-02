@@ -1,61 +1,43 @@
 import { useEffect } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const content: Record<string, { title: string; type?: "faq" | "text"; body: any }> = {
-  faq: {
-    title: "Questions fréquentes",
-    type: "faq",
-    body: [
-      { q: "Quels sont les délais de livraison ?", a: "Nous livrons partout en Algérie sous 48 à 72h ouvrées." },
-      { q: "Puis-je payer à la livraison ?", a: "Oui, le paiement à la livraison (cash on delivery) est notre méthode principale." },
-      { q: "Comment retourner un article ?", a: "Vous disposez de 14 jours après réception pour retourner un article non utilisé dans son emballage d'origine." },
-      { q: "Mes paquets sont-ils assurés ?", a: "Oui, chaque colis est emballé avec soin et assuré contre la casse durant le transport." },
-      { q: "Proposez-vous des cartes cadeaux ?", a: "Bientôt — inscrivez-vous à la newsletter pour être informé." },
-    ],
-  },
-  shipping: {
-    title: "Politique de livraison",
-    body: `Nous expédions dans toute l'Algérie sous 48 à 72h ouvrées.
-
-• Livraison à domicile : 700 DA (offerte dès 15 000 DA d'achats)
-• Livraison en bureau : 500 DA
-• Suivi par SMS à chaque étape de votre commande
-• Emballage premium offert sur tous les produits fragiles`,
-  },
-  returns: {
-    title: "Politique de retour",
-    body: `Vous disposez de 14 jours après réception pour nous retourner un article qui ne vous conviendrait pas.
-
-Conditions :
-• Article non utilisé, dans son emballage d'origine
-• Présentation du bon de commande
-• Frais de retour à votre charge (sauf défaut produit)
-• Remboursement sous 7 jours après réception du retour`,
-  },
-  privacy: {
-    title: "Politique de confidentialité",
-    body: `Univers Maison s'engage à protéger vos données personnelles.
-
-• Vos informations ne sont jamais revendues
-• Cryptage SSL sur toutes les pages
-• Vous pouvez demander la suppression de votre compte à tout moment
-• Conformité RGPD`,
-  },
+// Fallback content in case DB hasn't been seeded
+const fallback: Record<string, { title: string; content: string }> = {
+  faq: { title: "Questions fréquentes", content: "Q: Quels sont les délais de livraison ?\nR: Nous livrons partout en Algérie sous 48 à 72h ouvrées." },
+  shipping: { title: "Politique de livraison", content: "Nous expédions dans toute l'Algérie sous 48 à 72h ouvrées." },
+  returns: { title: "Politique de retour", content: "Vous disposez de 14 jours après réception pour retourner un article." },
+  privacy: { title: "Politique de confidentialité", content: "Univers Maison s'engage à protéger vos données personnelles." },
 };
 
-export default function StaticPage({ page }: { page: keyof typeof content }) {
-  const c = content[page];
-  useEffect(() => { document.title = `${c.title} — Univers Maison`; }, [c.title]);
+export default function StaticPage({ page }: { page: string }) {
+  const { data: pageData } = useQuery({
+    queryKey: ["page", page],
+    queryFn: async () => {
+      const { data } = await supabase.from("pages").select("*").eq("slug", page).limit(1);
+      return data?.[0] ?? null;
+    },
+  });
+
+  const title = pageData?.title ?? fallback[page]?.title ?? page;
+  const content = pageData?.content ?? fallback[page]?.content ?? "";
+
+  useEffect(() => { document.title = `${title} — Univers Maison`; }, [title]);
+
+  // Parse FAQ format: lines starting with Q: and R:
+  const isFaq = page === "faq";
+  const faqItems = isFaq ? parseFaq(content) : [];
 
   return (
     <div className="container-luxe py-16">
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-serif text-5xl">{c.title}</h1>
+        <h1 className="font-serif text-5xl">{title}</h1>
         <div className="my-8 gold-divider" />
 
-        {c.type === "faq" ? (
+        {isFaq && faqItems.length > 0 ? (
           <Accordion type="single" collapsible className="space-y-2">
-            {(c.body as { q: string; a: string }[]).map((it, i) => (
+            {faqItems.map((it, i) => (
               <AccordionItem key={i} value={`item-${i}`} className="rounded-2xl border border-border bg-card px-5">
                 <AccordionTrigger className="font-serif text-lg">{it.q}</AccordionTrigger>
                 <AccordionContent className="text-foreground/75">{it.a}</AccordionContent>
@@ -63,9 +45,25 @@ export default function StaticPage({ page }: { page: keyof typeof content }) {
             ))}
           </Accordion>
         ) : (
-          <div className="whitespace-pre-line leading-relaxed text-foreground/80">{c.body as string}</div>
+          <div className="whitespace-pre-line leading-relaxed text-foreground/80">{content}</div>
         )}
       </div>
     </div>
   );
+}
+
+function parseFaq(content: string): { q: string; a: string }[] {
+  const lines = content.split("\n");
+  const items: { q: string; a: string }[] = [];
+  let currentQ = "";
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("Q:") || trimmed.startsWith("Q :")) {
+      currentQ = trimmed.replace(/^Q\s*:\s*/, "");
+    } else if ((trimmed.startsWith("R:") || trimmed.startsWith("R :")) && currentQ) {
+      items.push({ q: currentQ, a: trimmed.replace(/^R\s*:\s*/, "") });
+      currentQ = "";
+    }
+  }
+  return items;
 }

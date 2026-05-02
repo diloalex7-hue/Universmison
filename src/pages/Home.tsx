@@ -1,12 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Star } from "lucide-react";
+import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, localized } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ProductCard from "@/components/shop/ProductCard";
+import Countdown from "@/components/Countdown";
 
 export default function Home() {
   const { t, lang } = useI18n();
@@ -29,6 +30,43 @@ export default function Home() {
     queryKey: ["home-cats"],
     queryFn: async () => (await supabase.from("categories").select("*").order("display_order")).data ?? [],
   });
+  const { data: promo } = useQuery({
+    queryKey: ["home-promo"],
+    queryFn: async () => {
+      const { data } = await supabase.from("promotions").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(1);
+      return (data && data.length > 0) ? data[0] : null;
+    },
+  });
+  const { data: testimonials = [] } = useQuery({
+    queryKey: ["home-testimonials"],
+    queryFn: async () => (await supabase.from("testimonials").select("*").eq("is_visible", true).order("display_order").limit(6)).data ?? [],
+  });
+  const { data: hero } = useQuery({
+    queryKey: ["home-hero"],
+    queryFn: async () => {
+      const { data } = await supabase.from("hero_settings").select("*").limit(1);
+      return data?.[0] ?? null;
+    },
+  });
+
+  const h = {
+    eyebrow: hero?.eyebrow || t("hero.eyebrow"),
+    title: hero?.title || t("hero.title"),
+    subtitle: hero?.subtitle || t("hero.subtitle"),
+    image_url: hero?.image_url || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80",
+    button1_text: hero?.button1_text || t("hero.cta"),
+    button1_link: hero?.button1_link || "/shop",
+    button2_text: hero?.button2_text || t("hero.cta2"),
+    button2_link: hero?.button2_link || "/categories",
+    stat1_value: hero?.stat1_value || "120+",
+    stat1_label: hero?.stat1_label || "références",
+    stat2_value: hero?.stat2_value || "4.9",
+    stat2_label: hero?.stat2_label || "note moyenne",
+    stat3_value: hero?.stat3_value || "48h",
+    stat3_label: hero?.stat3_label || "livraison",
+    badge_text: hero?.badge_text || "4.9 / 5",
+    badge_subtitle: hero?.badge_subtitle || "+2 400 clients ravis",
+  };
 
   return (
     <>
@@ -41,32 +79,32 @@ export default function Home() {
         <div className="container-luxe relative grid items-center gap-10 py-20 md:py-28 lg:grid-cols-2 lg:py-36">
           <div className="animate-fade-up max-w-xl">
             <span className="inline-block rounded-full border border-gold/40 px-4 py-1 text-xs uppercase tracking-[0.25em] text-gold">
-              {t("hero.eyebrow")}
+              {h.eyebrow}
             </span>
             <h1 className="mt-6 font-serif text-5xl leading-[1.05] md:text-6xl lg:text-7xl">
-              {t("hero.title")}
+              {h.title}
             </h1>
             <p className="mt-6 max-w-md text-lg text-primary-foreground/75">
-              {t("hero.subtitle")}
+              {h.subtitle}
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
-              <Button asChild variant="gold" size="xl"><Link to="/shop">{t("hero.cta")} <ArrowRight className="h-4 w-4" /></Link></Button>
+              <Button asChild variant="gold" size="xl"><Link to={h.button1_link}>{h.button1_text} <ArrowRight className="h-4 w-4" /></Link></Button>
               <Button asChild variant="outline" size="xl" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                <Link to="/categories">{t("hero.cta2")}</Link>
+                <Link to={h.button2_link}>{h.button2_text}</Link>
               </Button>
             </div>
             <div className="mt-12 flex gap-8 text-xs text-primary-foreground/60">
-              <div><div className="font-serif text-2xl text-gold">120+</div>références</div>
-              <div><div className="font-serif text-2xl text-gold">4.9</div>note moyenne</div>
-              <div><div className="font-serif text-2xl text-gold">48h</div>livraison</div>
+              <div><div className="font-serif text-2xl text-gold">{h.stat1_value}</div>{h.stat1_label}</div>
+              <div><div className="font-serif text-2xl text-gold">{h.stat2_value}</div>{h.stat2_label}</div>
+              <div><div className="font-serif text-2xl text-gold">{h.stat3_value}</div>{h.stat3_label}</div>
             </div>
           </div>
 
           <div className="relative animate-fade-up [animation-delay:200ms]">
             <div className="relative aspect-[4/5] overflow-hidden rounded-3xl shadow-luxury">
               <img
-                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80"
-                alt="Table dressée"
+                src={h.image_url}
+                alt="Hero"
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
@@ -77,8 +115,8 @@ export default function Home() {
                   <Star className="h-5 w-5 fill-gold-foreground text-gold-foreground" />
                 </div>
                 <div>
-                  <div className="font-serif text-base">4.9 / 5</div>
-                  <div className="text-xs text-muted-foreground">+2 400 clients ravis</div>
+                  <div className="font-serif text-base">{h.badge_text}</div>
+                  <div className="text-xs text-muted-foreground">{h.badge_subtitle}</div>
                 </div>
               </div>
             </div>
@@ -117,29 +155,45 @@ export default function Home() {
         <ProductGrid items={featured} />
       </Section>
 
-      {/* PROMO BANNER */}
-      <section className="container-luxe my-16">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-primary p-10 text-primary-foreground md:p-16">
-          <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gold/20 blur-3xl" />
-          <div className="relative grid items-center gap-8 md:grid-cols-2">
-            <div>
-              <span className="text-xs uppercase tracking-[0.25em] text-gold">Édition limitée</span>
-              <h3 className="mt-3 font-serif text-4xl md:text-5xl">Collection Hiver — jusqu'à <span className="text-gold">−30%</span></h3>
-              <p className="mt-4 max-w-md text-primary-foreground/70">
-                Sublimez vos tablées de fêtes avec notre sélection en or et bleu nuit.
-              </p>
-              <Button asChild variant="gold" size="lg" className="mt-6"><Link to="/shop">Profiter de l'offre</Link></Button>
-            </div>
-            <div className="flex justify-center md:justify-end">
-              <img
-                src="https://images.unsplash.com/photo-1602874801007-aa31b56409a4?w=600"
-                alt=""
-                className="h-64 w-64 rounded-2xl object-cover shadow-luxury md:h-80 md:w-80"
-              />
+      {/* PROMO BANNER (Dynamic) */}
+      {promo && (
+        <section className="container-luxe my-16">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-primary p-10 text-primary-foreground md:p-16">
+            <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gold/20 blur-3xl" />
+            <div className="relative grid items-center gap-8 md:grid-cols-2">
+              <div>
+                {promo.subtitle && (
+                  <span className="text-xs uppercase tracking-[0.25em] text-gold">{promo.subtitle}</span>
+                )}
+                <h3 className="mt-3 font-serif text-4xl md:text-5xl">
+                  {promo.title}
+                  {promo.discount_text && (
+                    <> — jusqu'à <span className="text-gold">{promo.discount_text}</span></>
+                  )}
+                </h3>
+                {promo.description && (
+                  <p className="mt-4 max-w-md text-primary-foreground/70">{promo.description}</p>
+                )}
+                {promo.end_date && <Countdown endDate={promo.end_date} />}
+                {promo.button_text && promo.button_link && (
+                  <Button asChild variant="gold" size="lg" className="mt-6">
+                    <Link to={promo.button_link}>{promo.button_text}</Link>
+                  </Button>
+                )}
+              </div>
+              {promo.image_url && (
+                <div className="flex justify-center md:justify-end">
+                  <img
+                    src={promo.image_url}
+                    alt={promo.title}
+                    className="h-64 w-64 rounded-2xl object-cover shadow-luxury md:h-80 md:w-80"
+                  />
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* BESTSELLERS */}
       <Section title={t("sec.bestsellers")} action={<Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground">{t("sec.viewall")} →</Link>}>
@@ -177,29 +231,8 @@ export default function Home() {
         <ProductGrid items={news} />
       </Section>
 
-      {/* TESTIMONIALS */}
-      <section className="container-luxe my-20">
-        <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.25em] text-gold-deep">{t("sec.testimonials")}</p>
-          <h2 className="mt-3 font-serif text-3xl md:text-4xl">Ce qu'en disent nos clients</h2>
-        </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {[
-            { name: "Amina B.", city: "Alger", text: "Vaisselle d'une qualité exceptionnelle, l'emballage est digne d'un cadeau de luxe." },
-            { name: "Karim L.", city: "Oran", text: "Service client impeccable et livraison ultra rapide. Je recommande à 100%." },
-            { name: "Lina R.", city: "Constantine", text: "Mes invités sont sous le charme à chaque fois. Univers Maison transforme une table." },
-          ].map((r, i) => (
-            <div key={i} className="rounded-2xl border border-border bg-card p-6 shadow-elegant">
-              <div className="flex gap-0.5 text-gold">{Array(5).fill(0).map((_, j) => <Star key={j} className="h-4 w-4 fill-current" />)}</div>
-              <p className="mt-4 leading-relaxed text-foreground/85">« {r.text} »</p>
-              <div className="mt-6 text-sm">
-                <div className="font-medium">{r.name}</div>
-                <div className="text-xs text-muted-foreground">{r.city}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* TESTIMONIALS SLIDER */}
+      {testimonials.length > 0 && <TestimonialSlider testimonials={testimonials} title={t("sec.testimonials")} />}
 
       {/* NEWSLETTER */}
       <section className="container-luxe my-20">
@@ -243,3 +276,123 @@ function ProductGrid({ items }: { items: any[] }) {
     </div>
   );
 }
+
+function TestimonialSlider({ testimonials, title }: { testimonials: any[]; title: string }) {
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // How many cards to show per "page" based on screen size
+  const getPerPage = useCallback(() => {
+    if (typeof window === "undefined") return 3;
+    if (window.innerWidth < 640) return 1;
+    if (window.innerWidth < 1024) return 2;
+    return 3;
+  }, []);
+
+  const [perPage, setPerPage] = useState(getPerPage);
+  const totalPages = Math.ceil(testimonials.length / perPage);
+
+  useEffect(() => {
+    const onResize = () => setPerPage(getPerPage());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [getPerPage]);
+
+  // Auto-play
+  useEffect(() => {
+    if (paused || totalPages <= 1) return;
+    timerRef.current = setInterval(() => {
+      setCurrent(c => (c + 1) % totalPages);
+    }, 5000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [paused, totalPages]);
+
+  const prev = () => setCurrent(c => (c - 1 + totalPages) % totalPages);
+  const next = () => setCurrent(c => (c + 1) % totalPages);
+
+  const visibleItems = testimonials.slice(current * perPage, current * perPage + perPage);
+  // If we're at the last page and there aren't enough items, pad from the beginning
+  const displayed = visibleItems.length < perPage
+    ? [...visibleItems, ...testimonials.slice(0, perPage - visibleItems.length)]
+    : visibleItems;
+
+  return (
+    <section
+      className="container-luxe my-20"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="text-center">
+        <p className="text-xs uppercase tracking-[0.25em] text-gold-deep">{title}</p>
+        <h2 className="mt-3 font-serif text-3xl md:text-4xl">Ce qu'en disent nos clients</h2>
+      </div>
+
+      <div className="relative mt-12">
+        {/* Navigation Arrows */}
+        {totalPages > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/90 shadow-lg backdrop-blur transition-all hover:border-gold hover:shadow-xl"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={next}
+              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/90 shadow-lg backdrop-blur transition-all hover:border-gold hover:shadow-xl"
+              aria-label="Next"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
+
+        {/* Cards */}
+        <div className="overflow-hidden">
+          <div
+            className="grid gap-6 transition-all duration-500 ease-in-out"
+            style={{ gridTemplateColumns: `repeat(${perPage}, 1fr)` }}
+          >
+            {displayed.map((r: any, i: number) => (
+              <div
+                key={`${current}-${i}`}
+                className="rounded-2xl border border-border bg-card p-6 shadow-elegant animate-fade-up"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="flex gap-0.5 text-gold">
+                  {Array(r.rating).fill(0).map((_, j) => (
+                    <Star key={j} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
+                <p className="mt-4 leading-relaxed text-foreground/85 line-clamp-4">« {r.text} »</p>
+                <div className="mt-6 text-sm">
+                  <div className="font-medium">{r.name}</div>
+                  {r.city && <div className="text-xs text-muted-foreground">{r.city}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dots */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center gap-2">
+            {Array(totalPages).fill(0).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  i === current ? "w-8 bg-gold" : "w-2.5 bg-border hover:bg-gold/40"
+                }`}
+                aria-label={`Page ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
