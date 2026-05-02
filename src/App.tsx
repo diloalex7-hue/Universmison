@@ -23,6 +23,11 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import StaticPage from "./pages/StaticPage";
 import NotFound from "./pages/NotFound";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminOrders from "./pages/admin/AdminOrders";
 
 const queryClient = new QueryClient();
 
@@ -34,30 +39,40 @@ const App = () => (
           <Toaster />
           <Sonner position="top-center" />
           <BrowserRouter>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/shop/:categorySlug" element={<Shop />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/product/:slug" element={<ProductDetails />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/order/confirm/:id" element={<OrderConfirm />} />
-                <Route path="/track" element={<OrderTracking />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/account/orders" element={<Orders />} />
-                <Route path="/account/favorites" element={<Favorites />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/faq" element={<StaticPage page="faq" />} />
-                <Route path="/shipping" element={<StaticPage page="shipping" />} />
-                <Route path="/returns" element={<StaticPage page="returns" />} />
-                <Route path="/privacy" element={<StaticPage page="privacy" />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Layout>
+            <Routes>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="orders" element={<AdminOrders />} />
+              </Route>
+              <Route path="*" element={
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/shop/:categorySlug" element={<Shop />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/product/:slug" element={<ProductDetails />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/order/confirm/:id" element={<OrderConfirm />} />
+                    <Route path="/track" element={<OrderTracking />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/account" element={<Account />} />
+                    <Route path="/account/orders" element={<Orders />} />
+                    <Route path="/account/favorites" element={<Favorites />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/faq" element={<StaticPage page="faq" />} />
+                    <Route path="/shipping" element={<StaticPage page="shipping" />} />
+                    <Route path="/returns" element={<StaticPage page="returns" />} />
+                    <Route path="/privacy" element={<StaticPage page="privacy" />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Layout>
+              } />
+            </Routes>
           </BrowserRouter>
         </AuthProvider>
       </I18nProvider>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useCart, useFavorites } from "@/lib/store";
+import { useAdmin } from "@/lib/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +21,7 @@ const langs: { code: Lang; label: string }[] = [
 export default function Header() {
   const { t, lang, setLang } = useI18n();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const { count } = useCart();
   const { items: favs } = useFavorites();
   const navigate = useNavigate();
@@ -145,6 +147,10 @@ export default function Header() {
                   <DropdownMenuItem asChild><Link to="/account">{t("acc.profile")}</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/account/orders">{t("acc.orders")}</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/account/favorites">{t("acc.favorites")}</Link></DropdownMenuItem>
+                  {isAdmin && (<>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild><Link to="/admin" className="text-gold font-medium">⚡ Admin Console</Link></DropdownMenuItem>
+                  </>)}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut}>{t("nav.signout")}</DropdownMenuItem>
                 </DropdownMenuContent>
