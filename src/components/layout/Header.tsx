@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useCart, useFavorites } from "@/lib/store";
+import { useAdmin } from "@/lib/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
