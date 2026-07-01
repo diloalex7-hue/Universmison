@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, X, Globe, ArrowLeft, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/components/theme-provider";
@@ -8,6 +8,7 @@ import { useCart, useFavorites } from "@/lib/store";
 import { useAdmin } from "@/lib/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -26,8 +27,10 @@ export default function Header() {
   const { count } = useCart();
   const { items: favs } = useFavorites();
   const navigate = useNavigate();
+  const location = useLocation();
   const [q, setQ] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const showBackButton = location.pathname.startsWith("/product/");
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,22 +104,35 @@ export default function Header() {
             </div>
           ) : (
             <>
-              {/* Logo */}
-              <Link to="/" className="flex items-center gap-2 sm:gap-3 shrink-0 active:scale-95 transition-transform duration-200 -ml-1">
-                <img src="/logo.png" alt="Univers Maison Logo" className="h-10 w-auto sm:h-12 object-contain drop-shadow-sm" />
-                <div className="leading-none flex flex-col">
-                  <div className="font-serif text-lg sm:text-xl font-medium tracking-tight whitespace-nowrap">
-                    {lang === "ar" ? (
-                      t("brand.name")
-                    ) : (
-                      <>Univers <span className="text-gold">Maison</span></>
-                    )}
+              {/* Logo & optional Back button */}
+              <div className="flex items-center gap-2">
+                {showBackButton && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => navigate(-1)} 
+                    className="h-10 w-10 text-muted-foreground hover:text-foreground active:scale-95 transition-transform duration-200"
+                    aria-label="Back"
+                  >
+                    <ArrowLeft className={cn("h-6 w-6 text-gold-deep", lang === "ar" && "rotate-180")} />
+                  </Button>
+                )}
+                <Link to="/" className="flex items-center gap-2 sm:gap-3 shrink-0 active:scale-95 transition-transform duration-200 -ml-1">
+                  <img src="/logo.png" alt="Univers Maison Logo" className="h-10 w-auto sm:h-12 object-contain drop-shadow-sm" />
+                  <div className="leading-none flex flex-col">
+                    <div className="font-serif text-lg sm:text-xl font-medium tracking-tight whitespace-nowrap">
+                      {lang === "ar" ? (
+                        t("brand.name")
+                      ) : (
+                        <>Univers <span className="text-gold">Maison</span></>
+                      )}
+                    </div>
+                    <div className="text-[8px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-muted-foreground whitespace-nowrap">
+                      {t("brand.tagline")}
+                    </div>
                   </div>
-                  <div className="text-[8px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-muted-foreground whitespace-nowrap">
-                    {t("brand.tagline")}
-                  </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
 
               {/* Desktop nav */}
               <nav className="hidden lg:flex items-center gap-7">

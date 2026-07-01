@@ -12,14 +12,14 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SlidersHorizontal } from "lucide-react";
 
-type Sort = "new" | "priceasc" | "pricedesc" | "rating";
+type Sort = "all" | "new" | "priceasc" | "pricedesc" | "rating";
 
 export default function Shop() {
   const { categorySlug } = useParams();
   const [params] = useSearchParams();
   const q = params.get("q") || "";
   const { t, lang } = useI18n();
-  const [sort, setSort] = useState<Sort>("new");
+  const [sort, setSort] = useState<Sort>("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 25000]);
 
   useEffect(() => { document.title = "Boutique — Univers Maison"; }, []);
@@ -37,7 +37,8 @@ export default function Shop() {
       let query = supabase.from("products").select("*");
       if (currentCat) query = query.eq("category_id", currentCat.id);
       if (q) query = query.or(`name_fr.ilike.%${q}%,name_ar.ilike.%${q}%,name_en.ilike.%${q}%`);
-      if (sort === "priceasc") query = query.order("price", { ascending: true });
+      if (sort === "new") query = query.eq("is_new", true).order("created_at", { ascending: false });
+      else if (sort === "priceasc") query = query.order("price", { ascending: true });
       else if (sort === "pricedesc") query = query.order("price", { ascending: false });
       else if (sort === "rating") query = query.order("rating", { ascending: false });
       else query = query.order("created_at", { ascending: false });
@@ -88,6 +89,7 @@ export default function Shop() {
             <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
               <SelectTrigger className="w-52 rounded-full"><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">{t("filter.sort.all")}</SelectItem>
                 <SelectItem value="new">{t("filter.sort.new")}</SelectItem>
                 <SelectItem value="priceasc">{t("filter.sort.priceasc")}</SelectItem>
                 <SelectItem value="pricedesc">{t("filter.sort.pricedesc")}</SelectItem>
@@ -128,7 +130,7 @@ function FilterPanel({ categories, currentSlug, priceRange, setPriceRange }: any
       <div>
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gold-deep">{t("nav.categories")}</h3>
         <ul className="space-y-1.5">
-          <li><Link to="/shop" className={`block rounded-lg px-3 py-2 text-sm transition-luxe hover:bg-secondary ${!currentSlug ? "bg-secondary font-medium" : ""}`}>Tout</Link></li>
+          <li><Link to="/shop" className={`block rounded-lg px-3 py-2 text-sm transition-luxe hover:bg-secondary ${!currentSlug ? "bg-secondary font-medium" : ""}`}>{t("nav.shop")}</Link></li>
           {categories.map((c: any) => (
             <li key={c.id}>
               <Link to={`/shop/${c.slug}`} className={`block rounded-lg px-3 py-2 text-sm transition-luxe hover:bg-secondary ${currentSlug === c.slug ? "bg-secondary font-medium" : ""}`}>

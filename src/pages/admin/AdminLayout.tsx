@@ -1,7 +1,7 @@
 import { Link, NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAdmin } from "@/lib/useAdmin";
 import { useAuth } from "@/lib/auth";
-import { LayoutDashboard, Package, Tags, ShoppingBag, LogOut, Home, Megaphone, Settings, MessageSquareQuote, FileText, LayoutTemplate, Inbox } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingBag, LogOut, Home, Megaphone, Settings, MessageSquareQuote, FileText, LayoutTemplate, Inbox, GalleryHorizontalEnd } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const items = [
@@ -10,7 +10,7 @@ const items = [
   { to: "/admin/categories", label: "Catégories", icon: Tags },
   { to: "/admin/orders", label: "Commandes", icon: ShoppingBag },
   { to: "/admin/promotions", label: "Promotions", icon: Megaphone },
-  { to: "/admin/hero", label: "Hero", icon: LayoutTemplate },
+  { to: "/admin/hero", label: "Slider", icon: GalleryHorizontalEnd },
   { to: "/admin/testimonials", label: "Avis clients", icon: MessageSquareQuote },
   { to: "/admin/messages", label: "Messages", icon: Inbox },
   { to: "/admin/pages", label: "Pages", icon: FileText },

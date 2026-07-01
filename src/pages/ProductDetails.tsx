@@ -56,9 +56,9 @@ export default function ProductDetails() {
     : 0;
 
   return (
-    <div className="container-luxe py-10">
+    <div className="container-luxe py-6 md:py-10">
       {/* Breadcrumb */}
-      <nav className="text-xs text-muted-foreground">
+      <nav className="text-xs text-muted-foreground mb-6">
         <Link to="/" className="hover:text-foreground">{t("nav.home")}</Link>
         <span className="mx-2">/</span>
         {product.category && <>

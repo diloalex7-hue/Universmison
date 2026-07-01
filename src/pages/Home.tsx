@@ -56,7 +56,7 @@ export default function Home() {
   const { data: heroSlides = [] } = useQuery({
     queryKey: ["home-hero-slides"],
     queryFn: async () => {
-      const { data } = await supabase.from("hero_settings").select("*");
+      const { data } = await supabase.from("hero_settings").select("*").order("display_order", { ascending: true });
       return data ?? [];
     },
   });
@@ -356,8 +356,13 @@ export default function Home() {
       <section className="my-14 md:my-20">
         <div className="container-luxe mb-8">
           <div className="text-center">
-            <p className="text-xs uppercase tracking-[0.25em] text-gold-deep">{t("sec.categories")}</p>
-            <h2 className="mt-2 font-serif text-3xl md:text-4xl">{t("sec.categories")}</h2>
+            <h2 className="mt-2 font-serif text-3xl md:text-4xl">
+              {lang === "ar" ? (
+                <>يونيفرس <span className="text-gold">ميزون</span></>
+              ) : (
+                <>Univers <span className="text-gold">Maison</span></>
+              )}
+            </h2>
           </div>
         </div>
         
@@ -460,47 +465,8 @@ export default function Home() {
         <ProductGrid items={news} />
       </Section>
 
-      {/* BENEFITS */}
-      <section className="bg-secondary/30 py-20 mt-20">
-        <div className="container-luxe">
-          <div className="text-center">
-            <p className="text-xs uppercase tracking-[0.25em] text-gold-deep">{t("sec.benefits")}</p>
-            <h2 className="mt-3 font-serif text-3xl md:text-4xl">{t("benefits.title")}</h2>
-          </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { icon: Truck, title: t("ben.shipping"), desc: t("ben.shipping.d") },
-              { icon: ShieldCheck, title: t("ben.payment"), desc: t("ben.payment.d") },
-              { icon: RotateCcw, title: t("ben.return"), desc: t("ben.return.d") },
-              { icon: Headphones, title: t("ben.support"), desc: t("ben.support.d") },
-            ].map((b, i) => (
-              <div key={i} className="rounded-2xl bg-background p-6 text-center shadow-elegant">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-gold">
-                  <b.icon className="h-6 w-6 text-gold-foreground" />
-                </div>
-                <h4 className="mt-4 font-serif text-lg">{b.title}</h4>
-                <p className="mt-1 text-sm text-muted-foreground">{b.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* TESTIMONIALS SLIDER */}
       {testimonials.length > 0 && <TestimonialSlider testimonials={testimonials} title={t("sec.testimonials")} />}
-
-      {/* NEWSLETTER */}
-      <section className="container-luxe my-20">
-        <div className="rounded-3xl bg-gradient-primary p-10 text-center text-white md:p-16">
-          <h3 className="font-serif text-3xl md:text-4xl">{t("sec.newsletter")}</h3>
-          <p className="mx-auto mt-3 max-w-xl text-white/70">{t("sec.newsletter.desc")}</p>
-          <form onSubmit={(e) => e.preventDefault()} className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
-            <Input type="email" required placeholder={t("common.email")}
-              className="h-12 border-white/20 bg-white/10 text-white placeholder:text-white/50 focus-visible:ring-gold" />
-            <Button type="submit" variant="gold" size="lg">{t("common.subscribe")}</Button>
-          </form>
-        </div>
-      </section>
     </>
   );
 }

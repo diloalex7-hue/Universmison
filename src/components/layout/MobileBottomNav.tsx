@@ -45,10 +45,12 @@ export default function MobileBottomNav() {
                     </span>
                   )}
                 </div>
-                <span className="text-[9px] font-semibold tracking-wide transition-all duration-300">{item.label}</span>
-                {isActive && (
-                  <span className="ios-tab-active-dot w-1 h-1 bg-gold rounded-full absolute bottom-1.5 animate-scale-in" />
-                )}
+                <span className="text-[9px] font-semibold tracking-wide transition-all duration-300 relative">
+                  {item.label}
+                  {isActive && (
+                    <span className="ios-tab-active-dot w-1 h-1 bg-gold rounded-full absolute left-1/2 -translate-x-1/2 -bottom-2.5 animate-scale-in" />
+                  )}
+                </span>
               </>
             )}
           </NavLink>

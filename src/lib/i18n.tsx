@@ -63,6 +63,7 @@ const dict: Dict = {
   "filter.title": { fr: "Filtres", ar: "التصفية", en: "Filters" },
   "filter.price": { fr: "Prix", ar: "السعر", en: "Price" },
   "filter.sort": { fr: "Trier", ar: "ترتيب", en: "Sort" },
+  "filter.sort.all": { fr: "Tout", ar: "الكل", en: "All" },
   "filter.sort.new": { fr: "Nouveautés", ar: "الأحدث", en: "Newest" },
   "filter.sort.priceasc": { fr: "Prix croissant", ar: "السعر تصاعدي", en: "Price ↑" },
   "filter.sort.pricedesc": { fr: "Prix décroissant", ar: "السعر تنازلي", en: "Price ↓" },
