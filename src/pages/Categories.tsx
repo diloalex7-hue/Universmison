@@ -21,9 +21,9 @@ export default function Categories() {
     <div className="container-luxe py-12">
       <div className="text-center">
         <p className="text-xs uppercase tracking-[0.25em] text-gold-deep">{t("sec.categories")}</p>
-        <h1 className="mt-3 font-serif text-4xl md:text-5xl">Explorer nos univers</h1>
+        <h1 className="mt-3 font-serif text-4xl md:text-5xl">{t("cat.explore")}</h1>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-          Chaque catégorie est une invitation à composer une table inoubliable.
+          {t("cat.desc")}
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export default function Categories() {
             <Link
               key={c.id}
               to={`/shop/${c.slug}`}
-              className="group relative aspect-[4/5] overflow-hidden rounded-3xl bg-gradient-primary text-primary-foreground shadow-elegant animate-fade-up"
+              className="group relative aspect-[4/5] overflow-hidden rounded-3xl bg-gradient-primary text-white shadow-elegant animate-fade-up"
               style={{ animationDelay: `${i * 80}ms` }}
             >
               <div
@@ -45,9 +45,9 @@ export default function Categories() {
               <div className="relative z-10 flex h-full flex-col justify-end p-8">
                 <p className="text-xs uppercase tracking-[0.25em] text-gold">{count} {t("common.products")}</p>
                 <h3 className="mt-2 font-serif text-3xl">{localized(c, "name", lang)}</h3>
-                <p className="mt-2 text-sm text-primary-foreground/80">{localized(c, "description", lang)}</p>
+                <p className="mt-2 text-sm text-white/80">{localized(c, "description", lang)}</p>
                 <div className="mt-4 inline-flex items-center gap-2 text-sm text-gold opacity-0 transition-luxe group-hover:opacity-100">
-                  Découvrir <ArrowRight className="h-4 w-4" />
+                  {t("common.discover")} <ArrowRight className="h-4 w-4" />
                 </div>
               </div>
             </Link>

@@ -60,8 +60,15 @@ function SignInForm() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
     setLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Connecté");
+    if (error) {
+      if (error.message.includes("rate limit")) {
+        toast.error("لقد قمت بمحاولات كثيرة جداً، يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.");
+      } else {
+        toast.error(error.message);
+      }
+    } else {
+      toast.success("Connecté");
+    }
   };
 
   return (
@@ -95,8 +102,15 @@ function SignUpForm() {
       options: { data: { full_name: parsed.data.full_name }, emailRedirectTo: window.location.origin },
     });
     setLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Compte créé !");
+    if (error) {
+      if (error.message.includes("rate limit")) {
+        toast.error("لقد قمت بمحاولات كثيرة جداً، يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.");
+      } else {
+        toast.error(error.message);
+      }
+    } else {
+      toast.success("Compte créé !");
+    }
   };
 
   return (

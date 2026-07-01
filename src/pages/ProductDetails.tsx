@@ -7,6 +7,7 @@ import { useCart, useFavorites, formatDA } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Heart, Truck, ShieldCheck, RotateCcw, Star, Minus, Plus, Check } from "lucide-react";
 import ProductCard from "@/components/shop/ProductCard";
+import ReviewSection from "@/components/shop/ReviewSection";
 import { cn } from "@/lib/utils";
 
 export default function ProductDetails() {
@@ -67,14 +68,14 @@ export default function ProductDetails() {
         <span className="text-foreground">{name}</span>
       </nav>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
+      <div className="mt-0 md:mt-8 grid gap-6 md:gap-10 lg:grid-cols-[1.1fr_1fr]">
         {/* Gallery */}
-        <div>
-          <div className="overflow-hidden rounded-3xl bg-secondary/40 shadow-elegant">
-            <img src={product.images?.[imgIx]} alt={name} className="aspect-square w-full object-cover" />
+        <div className="-mx-6 md:mx-0">
+          <div className="overflow-hidden md:rounded-3xl bg-secondary/40 md:shadow-elegant">
+            <img src={product.images?.[imgIx]} alt={name} className="aspect-square md:aspect-[4/5] w-full object-cover" />
           </div>
           {product.images?.length > 1 && (
-            <div className="mt-4 grid grid-cols-5 gap-3">
+            <div className="mt-4 grid grid-cols-5 gap-3 px-6 md:px-0">
               {product.images.map((src: string, i: number) => (
                 <button key={i} onClick={() => setImgIx(i)}
                   className={cn("aspect-square overflow-hidden rounded-xl border-2 transition-luxe", imgIx === i ? "border-gold" : "border-transparent opacity-70 hover:opacity-100")}>
@@ -161,6 +162,13 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+
+      {/* Reviews */}
+      <ReviewSection 
+        productId={product.id} 
+        currentRating={product.rating} 
+        totalReviews={product.reviews_count} 
+      />
 
       {/* Related */}
       {related.length > 0 && (

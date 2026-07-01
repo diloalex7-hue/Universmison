@@ -26,7 +26,7 @@ export default function Footer() {
   const facebookUrl = settings?.facebook_url || "#";
 
   return (
-    <footer className="mt-24 bg-gradient-primary text-primary-foreground">
+    <footer className="mt-24 bg-gradient-primary text-white">
       <div className="container-luxe py-16">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
@@ -34,17 +34,17 @@ export default function Footer() {
               <img src="/logo.png" alt="Univers Maison Logo" className="h-14 w-auto object-contain drop-shadow-sm brightness-0 invert" />
               <div className="font-serif text-2xl">Univers <span className="text-gold">Maison</span></div>
             </Link>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-primary-foreground/70">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
               {t("foot.tagline")}
             </p>
-            <div className="mt-6 space-y-2 text-sm text-primary-foreground/70">
+            <div className="mt-6 space-y-2 text-sm text-white/70">
               <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-gold" /> {address}</div>
               <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-gold" /> {phone}</div>
               <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold" /> {email}</div>
             </div>
             <div className="mt-6 flex gap-3">
-              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground/80 transition-luxe hover:border-gold hover:text-gold"><Instagram className="h-4 w-4" /></a>
-              <a href={facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground/80 transition-luxe hover:border-gold hover:text-gold"><Facebook className="h-4 w-4" /></a>
+              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/80 transition-luxe hover:border-gold hover:text-gold"><Instagram className="h-4 w-4" /></a>
+              <a href={facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/80 transition-luxe hover:border-gold hover:text-gold"><Facebook className="h-4 w-4" /></a>
             </div>
           </div>
 
@@ -65,14 +65,14 @@ export default function Footer() {
               <p className="mb-2 text-xs uppercase tracking-[0.2em] text-gold">{t("sec.newsletter")}</p>
               <div className="flex gap-2">
                 <Input type="email" required placeholder={t("common.email")}
-                  className="h-9 border-primary-foreground/20 bg-primary-foreground/5 text-sm text-primary-foreground placeholder:text-primary-foreground/40 focus-visible:ring-gold" />
+                  className="h-9 border-white/20 bg-white/5 text-sm text-white placeholder:text-white/40 focus-visible:ring-gold" />
                 <Button type="submit" size="sm" variant="gold">{t("common.subscribe")}</Button>
               </div>
             </form>
           </FooterCol>
         </div>
 
-        <div className="mt-14 border-t border-primary-foreground/10 pt-6 text-center text-xs text-primary-foreground/50">
+        <div className="mt-14 border-t border-white/10 pt-6 text-center text-xs text-white/50">
           © {year} Univers Maison · {t("foot.rights")}
         </div>
       </div>
@@ -84,7 +84,7 @@ function FooterCol({ title, links, children }: { title: string; links: { to: str
   return (
     <div>
       <h4 className="mb-4 font-sans text-xs uppercase tracking-[0.2em] text-gold">{title}</h4>
-      <ul className="space-y-2.5 text-sm text-primary-foreground/70">
+      <ul className="space-y-2.5 text-sm text-white/70">
         {links.map(l => (
           <li key={l.to}><Link to={l.to} className="transition-luxe hover:text-gold">{l.label}</Link></li>
         ))}

@@ -37,13 +37,13 @@ export default function Checkout() {
 
   if (items.length === 0) {
     return <div className="container-luxe py-20 text-center">
-      <p>Votre panier est vide.</p>
-      <Button asChild variant="luxe" className="mt-4"><Link to="/shop">Voir la boutique</Link></Button>
+      <p>{t("checkout.cart_empty")}</p>
+      <Button asChild variant="luxe" className="mt-4"><Link to="/shop">{t("checkout.view_shop")}</Link></Button>
     </div>;
   }
   if (!user) {
     return <div className="container-luxe py-20 text-center">
-      <h2 className="font-serif text-2xl">Connectez-vous pour finaliser</h2>
+      <h2 className="font-serif text-2xl">{t("checkout.login_required")}</h2>
       <Button asChild variant="luxe" className="mt-4"><Link to="/auth?redirect=/checkout">{t("auth.signin")}</Link></Button>
     </div>;
   }
@@ -54,7 +54,7 @@ export default function Checkout() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse(form);
-    if (!parsed.success) { toast.error("Vérifiez les informations saisies"); return; }
+    if (!parsed.success) { toast.error(t("checkout.validation_error")); return; }
     setSubmitting(true);
     try {
       const { data: order, error } = await supabase.from("orders").insert({
@@ -85,7 +85,7 @@ export default function Checkout() {
       await clear.mutateAsync();
       navigate(`/order/confirm/${order.id}`);
     } catch (err: any) {
-      toast.error(err.message || "Une erreur est survenue");
+      toast.error(err.message || t("common.error"));
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +94,7 @@ export default function Checkout() {
   return (
     <div className="container-luxe py-10">
       <h1 className="font-serif text-4xl md:text-5xl">{t("checkout.title")}</h1>
-      <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground"><Lock className="h-3 w-3" /> Paiement sécurisé · Vos données sont protégées</div>
+      <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground"><Lock className="h-3 w-3" /> {t("checkout.secure")}</div>
 
       <form onSubmit={onSubmit} className="mt-10 grid gap-10 lg:grid-cols-[1fr_400px]">
         <div className="space-y-8">
@@ -114,14 +114,14 @@ export default function Checkout() {
           <Section title={t("checkout.payment")}>
             <label className="md:col-span-2 flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-gold bg-gold/5 p-4">
               <input type="radio" defaultChecked className="accent-gold" />
-              <div><div className="font-medium">{t("checkout.cod")}</div><div className="text-xs text-muted-foreground">Payez en espèces à la réception du colis</div></div>
+              <div><div className="font-medium">{t("checkout.cod")}</div><div className="text-xs text-muted-foreground">{t("checkout.cod.desc")}</div></div>
             </label>
           </Section>
         </div>
 
         {/* Summary */}
         <aside className="h-fit rounded-2xl border border-border bg-card p-6 shadow-elegant lg:sticky lg:top-28">
-          <h2 className="font-serif text-2xl">Votre commande</h2>
+          <h2 className="font-serif text-2xl">{t("order.your")}</h2>
           <ul className="mt-5 max-h-72 space-y-3 overflow-auto pr-1">
             {items.map((i: any) => (
               <li key={i.id} className="flex gap-3 text-sm">
@@ -138,7 +138,7 @@ export default function Checkout() {
           </ul>
           <dl className="mt-5 space-y-2 border-t border-border pt-5 text-sm">
             <div className="flex justify-between"><dt className="text-muted-foreground">{t("cart.subtotal")}</dt><dd>{formatDA(subtotal)}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">{t("cart.shipping")}</dt><dd>{shipping === 0 ? "Offert" : formatDA(shipping)}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted-foreground">{t("cart.shipping")}</dt><dd>{shipping === 0 ? t("common.free") : formatDA(shipping)}</dd></div>
             <div className="flex items-baseline justify-between pt-3 border-t border-border">
               <dt className="font-serif text-lg">{t("cart.total")}</dt>
               <dd className="font-serif text-2xl font-semibold">{formatDA(total)}</dd>

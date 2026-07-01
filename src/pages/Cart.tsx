@@ -25,7 +25,9 @@ export default function Cart() {
   return (
     <div className="container-luxe py-10">
       <h1 className="font-serif text-4xl md:text-5xl">{t("nav.cart")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{items.length} article{items.length > 1 ? "s" : ""}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {items.length} {items.length > 1 ? t("common.articles") : t("common.article")}
+      </p>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_380px]">
         <div className="space-y-4">
@@ -62,10 +64,10 @@ export default function Cart() {
 
         {/* Summary */}
         <aside className="h-fit rounded-2xl border border-border bg-card p-6 shadow-elegant">
-          <h2 className="font-serif text-2xl">Récapitulatif</h2>
+          <h2 className="font-serif text-2xl">{t("common.summary")}</h2>
           <dl className="mt-6 space-y-3 text-sm">
             <div className="flex justify-between"><dt className="text-muted-foreground">{t("cart.subtotal")}</dt><dd className="font-medium">{formatDA(subtotal)}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">{t("cart.shipping")}</dt><dd className="font-medium">{shipping === 0 ? "Offert" : formatDA(shipping)}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted-foreground">{t("cart.shipping")}</dt><dd className="font-medium">{shipping === 0 ? t("common.free") : formatDA(shipping)}</dd></div>
             <div className="gold-divider !h-px" />
             <div className="flex items-baseline justify-between pt-1">
               <dt className="font-serif text-lg">{t("cart.total")}</dt>

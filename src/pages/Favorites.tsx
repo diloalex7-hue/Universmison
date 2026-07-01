@@ -12,15 +12,15 @@ export default function Favorites() {
   const { t } = useI18n();
   useEffect(() => { document.title = "Favoris — Univers Maison"; }, []);
 
-  if (!user) return <div className="container-luxe py-20 text-center"><Link to="/auth" className="underline">Se connecter</Link></div>;
+  if (!user) return <div className="container-luxe py-20 text-center"><Link to="/auth" className="underline">{t("common.signin_required")}</Link></div>;
 
   return (
     <div className="container-luxe py-10">
       <h1 className="font-serif text-4xl md:text-5xl">{t("acc.favorites")}</h1>
       {items.length === 0 ? (
-        <div className="mt-10 rounded-2xl bg-secondary/40 p-12 text-center">
+        <div className="mt-10 rounded-2xl bg-secondary/40 p-12 text-center animate-fade-up">
           <Heart className="mx-auto h-10 w-10 text-muted-foreground" />
-          <p className="mt-3 text-muted-foreground">Aucun favori pour le moment.</p>
+          <p className="mt-3 text-muted-foreground">{t("common.nofavorites")}</p>
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4 lg:gap-6">

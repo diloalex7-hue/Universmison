@@ -1,10 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
+import { ThemeProvider } from "@/components/theme-provider";
 import Layout from "@/components/layout/Layout";
 
 import Home from "./pages/Home";
@@ -36,17 +38,27 @@ import AdminHero from "./pages/admin/AdminHero";
 import AdminMessages from "./pages/admin/AdminMessages";
 
 import ScrollToTop from "@/components/ScrollToTop";
+import BackButtonHandler from "@/components/BackButtonHandler";
+import SplashScreen from "@/components/SplashScreen";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <I18nProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner position="top-center" />
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="um-theme">
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+        <I18nProvider>
+          <AuthProvider>
+            {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+            {!showSplash && (
+            <>
+            <Toaster />
+            <Sonner position="top-center" />
           <BrowserRouter>
+            <BackButtonHandler />
             <ScrollToTop />
             <Routes>
               <Route path="/admin" element={<AdminLayout />}>
@@ -89,10 +101,14 @@ const App = () => (
               } />
             </Routes>
           </BrowserRouter>
+            </>
+            )}
         </AuthProvider>
       </I18nProvider>
     </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  </ThemeProvider>
+  );
+};
 
 export default App;

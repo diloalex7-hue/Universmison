@@ -3,7 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth";
 import { toast } from "sonner";
 
-const LOCAL_KEY = "um_cart_local";
+const getLang = () => {
+  try {
+    return typeof window !== "undefined" ? localStorage.getItem("um_lang") : "fr";
+  } catch {
+    return "fr";
+  }
+};
+
 
 export interface LocalCartItem {
   product_id: string;
@@ -14,7 +21,11 @@ export interface LocalCartItem {
 function readLocal(): LocalCartItem[] {
   try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]"); } catch { return []; }
 }
-function writeLocal(items: LocalCartItem[]) { localStorage.setItem(LOCAL_KEY, JSON.stringify(items)); }
+function writeLocal(items: LocalCartItem[]) { 
+  try {
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(items)); 
+  } catch {}
+}
 
 export function useCart() {
   const { user } = useAuth();
@@ -66,7 +77,12 @@ export function useCart() {
         writeLocal(local);
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); toast.success("Ajouté au panier"); },
+    onSuccess: () => { 
+      qc.invalidateQueries({ queryKey: ["cart"] }); 
+      const lang = getLang();
+      const msg = lang === "ar" ? "تمت إضافة المنتج إلى السلة" : lang === "en" ? "Added to cart" : "Ajouté au panier";
+      toast.success(msg); 
+    },
   });
 
   const update = useMutation({
@@ -124,7 +140,12 @@ export function useFavorites() {
 
   const toggle = useMutation({
     mutationFn: async (product_id: string) => {
-      if (!user) { toast.error("Connectez-vous pour ajouter aux favoris"); return; }
+      if (!user) { 
+        const lang = getLang();
+        const msg = lang === "ar" ? "سجل الدخول لإضافة المنتج للمفضلة" : lang === "en" ? "Sign in to add to favorites" : "Connectez-vous pour ajouter aux favoris";
+        toast.error(msg); 
+        return; 
+      }
       const existing = query.data?.find((f: any) => f.product_id === product_id);
       if (existing) await supabase.from("favorites").delete().eq("id", existing.id);
       else await supabase.from("favorites").insert({ user_id: user.id, product_id });

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
 
 // Fallback content in case DB hasn't been seeded
 const fallback: Record<string, { title: string; content: string }> = {
@@ -12,6 +13,7 @@ const fallback: Record<string, { title: string; content: string }> = {
 };
 
 export default function StaticPage({ page }: { page: string }) {
+  const { t } = useI18n();
   const { data: pageData } = useQuery({
     queryKey: ["page", page],
     queryFn: async () => {
@@ -20,8 +22,11 @@ export default function StaticPage({ page }: { page: string }) {
     },
   });
 
-  const title = pageData?.title ?? fallback[page]?.title ?? page;
-  const content = pageData?.content ?? fallback[page]?.content ?? "";
+  const defaultTitle = t(`static.${page}.title`) || fallback[page]?.title || page;
+  const defaultContent = t(`static.${page}.content`) || fallback[page]?.content || "";
+
+  const title = pageData?.title ?? defaultTitle;
+  const content = pageData?.content ?? defaultContent;
 
   useEffect(() => { document.title = `${title} — Univers Maison`; }, [title]);
 

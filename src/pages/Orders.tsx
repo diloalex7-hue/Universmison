@@ -19,17 +19,9 @@ const statusColor: Record<string, string> = {
   cancelled: "bg-destructive/10 text-destructive",
 };
 
-const statusLabel: Record<string, string> = {
-  pending: "En attente",
-  confirmed: "Confirmée",
-  shipped: "Expédiée",
-  delivered: "Livrée",
-  cancelled: "Annulée",
-};
-
 export default function Orders() {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   useEffect(() => { document.title = "Mes commandes — Univers Maison"; }, []);
 
   const { data: orders = [] } = useQuery({
@@ -89,22 +81,24 @@ export default function Orders() {
     const updated = new Set(reviewedOrders);
     updated.add(reviewOrder.id);
     setReviewedOrders(updated);
-    localStorage.setItem("reviewed_orders", JSON.stringify([...updated]));
+    try {
+      localStorage.setItem("reviewed_orders", JSON.stringify([...updated]));
+    } catch {}
 
     toast.success("Merci pour votre avis ! Il sera publié après validation.");
     setReviewDialog(false);
   };
 
-  if (!user) return <div className="container-luxe py-20 text-center"><Link to="/auth" className="underline">Se connecter</Link></div>;
+  if (!user) return <div className="container-luxe py-20 text-center"><Link to="/auth" className="underline">{t("common.signin_required")}</Link></div>;
 
   return (
     <div className="container-luxe py-10">
       <h1 className="font-serif text-4xl md:text-5xl">{t("acc.orders")}</h1>
 
       {orders.length === 0 ? (
-        <div className="mt-10 rounded-2xl bg-secondary/40 p-12 text-center">
+        <div className="mt-10 rounded-2xl bg-secondary/40 p-12 text-center animate-fade-up">
           <Package className="mx-auto h-10 w-10 text-muted-foreground" />
-          <p className="mt-3 text-muted-foreground">Aucune commande pour le moment.</p>
+          <p className="mt-3 text-muted-foreground">{t("common.noorders")}</p>
         </div>
       ) : (
         <div className="mt-8 space-y-4">
@@ -120,7 +114,7 @@ export default function Orders() {
                     <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString("fr-FR", { dateStyle: "long" })}</div>
                   </div>
                   <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColor[o.status]}`}>
-                    {statusLabel[o.status] || o.status}
+                    {t("status." + o.status)}
                   </span>
                 </div>
                 <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
@@ -133,16 +127,16 @@ export default function Orders() {
                   ))}
                 </div>
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-                  <span className="text-sm text-muted-foreground">Total</span>
+                  <span className="text-sm text-muted-foreground">{t("cart.total")}</span>
                   <div className="flex items-center gap-3">
                     {alreadyReviewed && (
                       <span className="flex items-center gap-1 text-xs text-emerald-600">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Avis envoyé
+                        <CheckCircle2 className="h-3.5 w-3.5" /> {t("review.sent")}
                       </span>
                     )}
                     {canReview && (
                       <Button variant="outline" size="sm" onClick={() => openReview(o)} className="text-xs">
-                        <Star className="h-3.5 w-3.5 mr-1 text-gold" /> Donner mon avis
+                        <Star className="h-3.5 w-3.5 mr-1 text-gold" /> {t("review.give")}
                       </Button>
                     )}
                     <span className="font-serif text-xl font-semibold">{formatDA(Number(o.total))}</span>
@@ -159,19 +153,19 @@ export default function Orders() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="font-serif text-xl flex items-center gap-2">
-              <MessageSquareQuote className="h-5 w-5 text-gold" /> Votre avis
+              <MessageSquareQuote className="h-5 w-5 text-gold" /> {t("review.your")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 mt-4">
             {reviewOrder && (
               <div className="bg-secondary/30 rounded-xl p-3 text-sm">
-                <span className="text-muted-foreground">Commande :</span>{" "}
+                <span className="text-muted-foreground">{t("order.number")} :</span>{" "}
                 <span className="font-medium">{reviewOrder.order_number}</span>
               </div>
             )}
 
             <div>
-              <p className="text-sm font-medium mb-2">Comment évaluez-vous votre expérience ?</p>
+              <p className="text-sm font-medium mb-2">{t("review.rate")}</p>
               <div className="flex gap-1.5">
                 {[1, 2, 3, 4, 5].map(n => (
                   <button
@@ -185,17 +179,17 @@ export default function Orders() {
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {reviewRating === 5 ? "Excellent !" : reviewRating === 4 ? "Très bien" : reviewRating === 3 ? "Correct" : reviewRating === 2 ? "Peut mieux faire" : "Décevant"}
+                {reviewRating === 5 ? (lang === "ar" ? "ممتاز!" : "Excellent !") : reviewRating === 4 ? (lang === "ar" ? "جيد جداً" : "Très bien") : reviewRating === 3 ? (lang === "ar" ? "مقبول" : "Correct") : reviewRating === 2 ? (lang === "ar" ? "يمكن تحسينه" : "Peut mieux faire") : (lang === "ar" ? "مخيب للآمل" : "Décevant")}
               </p>
             </div>
 
             <div>
-              <p className="text-sm font-medium mb-2">Votre commentaire</p>
+              <p className="text-sm font-medium mb-2">{t("review.comment")}</p>
               <Textarea
                 value={reviewText}
                 onChange={e => setReviewText(e.target.value)}
                 rows={4}
-                placeholder="Partagez votre expérience : qualité des produits, emballage, livraison..."
+                placeholder={lang === "ar" ? "شاركنا تجربتك: جودة المنتجات، التغليف، التوصيل..." : "Partagez votre expérience : qualité des produits, emballage, livraison..."}
               />
             </div>
 
@@ -203,12 +197,12 @@ export default function Orders() {
               <Button variant="outline" onClick={() => setReviewDialog(false)}>Annuler</Button>
               <Button onClick={submitReview} disabled={submitting} className="bg-gold hover:bg-gold/90 text-gold-foreground">
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Star className="h-4 w-4 mr-2" />}
-                {submitting ? "Envoi..." : "Envoyer mon avis"}
+                {submitting ? "..." : t("review.send")}
               </Button>
             </div>
 
             <p className="text-xs text-center text-muted-foreground">
-              Votre avis sera publié après validation par notre équipe.
+              {t("review.pending")}
             </p>
           </div>
         </DialogContent>

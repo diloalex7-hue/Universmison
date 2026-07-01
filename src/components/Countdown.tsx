@@ -40,13 +40,13 @@ export default function Countdown({ endDate }: { endDate: string }) {
   }
 
   return (
-    <div className="flex items-center gap-3 mt-6 mb-4" dir={lang === 'ar' ? 'ltr' : 'ltr'}>
+    <div className="flex items-center gap-1.5 sm:gap-3 mt-6 mb-4" dir="ltr">
       <TimeBox value={timeLeft.days} label={l.d} />
-      <span className="text-xl font-bold text-gold/60">:</span>
+      <span className="text-lg font-bold text-gold/60">:</span>
       <TimeBox value={timeLeft.hours} label={l.h} />
-      <span className="text-xl font-bold text-gold/60">:</span>
+      <span className="text-lg font-bold text-gold/60">:</span>
       <TimeBox value={timeLeft.minutes} label={l.m} />
-      <span className="text-xl font-bold text-gold/60">:</span>
+      <span className="text-lg font-bold text-gold/60">:</span>
       <TimeBox value={timeLeft.seconds} label={l.s} />
     </div>
   );
@@ -54,11 +54,11 @@ export default function Countdown({ endDate }: { endDate: string }) {
 
 function TimeBox({ value, label }: { value: number; label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center bg-background/20 backdrop-blur-md rounded-lg p-2 min-w-[3.5rem] md:min-w-[4rem] border border-gold/20 shadow-xl">
-      <span className="text-xl md:text-2xl font-serif font-bold text-gold">
+    <div className="flex flex-col items-center justify-center bg-background/20 backdrop-blur-md rounded-lg p-1.5 min-w-[2.8rem] sm:min-w-[3.5rem] md:min-w-[4rem] border border-gold/20 shadow-xl">
+      <span className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-gold">
         {value.toString().padStart(2, "0")}
       </span>
-      <span className="text-[9px] md:text-[10px] uppercase tracking-wider text-primary-foreground/70 mt-1">
+      <span className="text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-wider text-white/70 mt-1">
         {label}
       </span>
     </div>
