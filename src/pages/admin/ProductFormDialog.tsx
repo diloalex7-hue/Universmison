@@ -43,11 +43,13 @@ export default function ProductFormDialog({ open, onOpenChange, product, categor
     const files = e.target.files;
     if (!files?.length) return;
     setUploading(true);
+    const { compressImage } = await import("@/lib/imageCompressor");
     const urls: string[] = [];
     for (const file of Array.from(files)) {
-      const ext = file.name.split(".").pop();
+      const compressed = await compressImage(file);
+      const ext = compressed.name.split(".").pop();
       const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error } = await supabase.storage.from("product-images").upload(path, file);
+      const { error } = await supabase.storage.from("product-images").upload(path, compressed);
       if (error) { toast.error(error.message); continue; }
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
       urls.push(data.publicUrl);

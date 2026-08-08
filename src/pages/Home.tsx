@@ -51,7 +51,7 @@ export default function Home() {
   });
   const { data: testimonials = [] } = useQuery({
     queryKey: ["home-testimonials"],
-    queryFn: async () => (await supabase.from("testimonials").select("*").eq("is_visible", true).order("display_order").limit(6)).data ?? [],
+    queryFn: async () => (await supabase.from("testimonials").select("*").eq("is_visible", true).order("display_order")).data ?? [],
   });
   const { data: heroSlides = [] } = useQuery({
     queryKey: ["home-hero-slides"],
@@ -393,11 +393,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED */}
-      <Section title={t("sec.featured")} action={<Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground">{t("sec.viewall")} →</Link>}>
-        <ProductGrid items={featured} />
-      </Section>
-
       {/* PROMO BANNER (Dynamic) */}
       {promo && (
         <section className="container-luxe my-16">
@@ -454,6 +449,11 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* FEATURED */}
+      <Section title={t("sec.featured")} action={<Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground">{t("sec.viewall")} →</Link>}>
+        <ProductGrid items={featured} />
+      </Section>
 
       {/* BESTSELLERS */}
       <Section title={t("sec.bestsellers")} action={<Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground">{t("sec.viewall")} →</Link>}>

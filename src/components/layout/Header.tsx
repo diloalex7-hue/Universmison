@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { Search, Heart, ShoppingBag, User, X, Globe, ArrowLeft, Sun, Moon } from "lucide-react";
+import { Search, Heart, ShoppingBag, User, X, Globe, ArrowLeft, Sun, Moon, Package } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { useI18n, type Lang } from "@/lib/i18n";
@@ -44,7 +44,7 @@ export default function Header() {
     { to: "/", label: t("nav.home") },
     { to: "/shop", label: t("nav.shop") },
     { to: "/categories", label: t("nav.categories") },
-    { to: "/about", label: t("nav.about") },
+    { to: "/track", label: lang === "ar" ? "تتبع الطلب" : "Suivi" },
     { to: "/contact", label: t("nav.contact") },
   ];
 
@@ -73,7 +73,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between gap-4 md:h-20">
           {showMobileSearch ? (
             /* Expandable Search Input for iOS Style */
-            <div className="flex flex-1 items-center gap-2 animate-scale-in">
+            <div className="flex w-full items-center gap-2 animate-scale-in">
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -82,16 +82,22 @@ export default function Header() {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <form onSubmit={onSearch} className="relative flex-1">
-                <Search className="pointer-events-none absolute top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground"
-                  style={{ [lang === "ar" ? "right" : "left"]: "0.85rem" } as any} />
-                <Input 
-                  autoFocus
-                  value={q} 
-                  onChange={(e) => setQ(e.target.value)} 
-                  placeholder={t("nav.search")}
-                  className={`h-11 w-full rounded-full border-neutral-200/60 dark:border-neutral-800 bg-secondary/50 ${lang === "ar" ? "pr-10" : "pl-10"} focus-visible:ring-gold text-sm`} 
-                />
+              <form onSubmit={onSearch} className="relative flex-1 min-w-0">
+                <div className="flex h-11 w-full items-center gap-2 rounded-full border border-border/50 bg-secondary/30 px-3 shadow-inner transition-colors focus-within:border-gold/50 focus-within:bg-background focus-within:ring-2 focus-within:ring-gold/20">
+                  <Search className="h-4.5 w-4.5 shrink-0 text-muted-foreground" />
+                  <input 
+                    autoFocus
+                    value={q} 
+                    onChange={(e) => setQ(e.target.value)} 
+                    placeholder={t("nav.search")}
+                    className="flex-1 min-w-0 bg-transparent px-1 text-[15px] outline-none placeholder:text-muted-foreground" 
+                  />
+                  {q && (
+                    <button type="button" onClick={() => setQ("")} className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-secondary hover:text-foreground">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </form>
               <Button 
                 variant="ghost" 
@@ -174,6 +180,13 @@ export default function Header() {
                   <Search className="h-5.5 w-5.5 text-foreground" />
                 </Button>
 
+                {/* Tracking on Mobile */}
+                <Button asChild variant="ghost" size="icon" className="md:hidden">
+                  <Link to="/track" aria-label={lang === "ar" ? "تتبع الطلب" : "Suivi"}>
+                    <Package className="h-5.5 w-5.5 text-foreground" />
+                  </Link>
+                </Button>
+
                 {/* Language switcher on mobile */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -232,7 +245,13 @@ export default function Header() {
                         <DropdownMenuItem asChild><Link to="/admin" className="text-gold font-medium">⚡ Admin Console</Link></DropdownMenuItem>
                       </>)}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={signOut}>{t("nav.signout")}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        if (window.confirm(t("auth.confirm_logout") || "Are you sure you want to log out?")) {
+                          signOut();
+                        }
+                      }}>
+                        {t("nav.signout")}
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Truck, ShieldCheck, RotateCcw, Star, Minus, Plus, Check } from "lucide-react";
 import ProductCard from "@/components/shop/ProductCard";
 import ReviewSection from "@/components/shop/ReviewSection";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 export default function ProductDetails() {
@@ -57,23 +58,21 @@ export default function ProductDetails() {
 
   return (
     <div className="container-luxe py-6 md:py-10">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-muted-foreground mb-6">
-        <Link to="/" className="hover:text-foreground">{t("nav.home")}</Link>
-        <span className="mx-2">/</span>
-        {product.category && <>
-          <Link to={`/shop/${product.category.slug}`} className="hover:text-foreground">{localized(product.category, "name", lang)}</Link>
-          <span className="mx-2">/</span>
-        </>}
-        <span className="text-foreground">{name}</span>
-      </nav>
+
 
       <div className="mt-0 md:mt-8 grid gap-6 md:gap-10 lg:grid-cols-[1.1fr_1fr]">
         {/* Gallery */}
         <div className="-mx-6 md:mx-0">
-          <div className="overflow-hidden md:rounded-3xl bg-secondary/40 md:shadow-elegant">
-            <img src={product.images?.[imgIx]} alt={name} className="aspect-square md:aspect-[4/5] w-full object-cover" />
-          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="cursor-zoom-in overflow-hidden md:rounded-3xl bg-secondary/40 md:shadow-elegant transition-transform active:scale-[0.98]">
+                <img src={product.images?.[imgIx]} alt={name} className="aspect-square md:aspect-[4/5] w-full object-cover" />
+              </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-[95vw] md:max-w-4xl p-0 overflow-hidden border-none bg-transparent shadow-none">
+              <img src={product.images?.[imgIx]} alt={name} className="w-full h-auto max-h-[90vh] object-contain rounded-xl" />
+            </DialogContent>
+          </Dialog>
           {product.images?.length > 1 && (
             <div className="mt-4 grid grid-cols-5 gap-3 px-6 md:px-0">
               {product.images.map((src: string, i: number) => (

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Notifications } from "@/lib/notifications";
 
 const statusColor: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
@@ -23,6 +24,12 @@ export default function Orders() {
   const { user } = useAuth();
   const { t, lang } = useI18n();
   useEffect(() => { document.title = "Mes commandes — Univers Maison"; }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      Notifications.checkOrderStatusChanges(user.id);
+    }
+  }, [user]);
 
   const { data: orders = [] } = useQuery({
     queryKey: ["orders", user?.id],
@@ -126,6 +133,30 @@ export default function Orders() {
                     </div>
                   ))}
                 </div>
+
+                {/* Mini Timeline */}
+                {o.status !== "cancelled" && (
+                  <div className="mt-6 mb-2 px-2 hidden sm:block">
+                    <div className="relative flex justify-between items-center z-10">
+                      {["pending", "confirmed", "shipped", "delivered"].map((step, idx) => {
+                        const statuses = ["pending", "confirmed", "shipped", "delivered"];
+                        const isCompleted = statuses.indexOf(o.status) >= idx;
+                        const isCurrent = o.status === step;
+                        return (
+                          <div key={step} className="flex flex-col items-center w-8">
+                            <div className={`h-4 w-4 rounded-full flex items-center justify-center transition-all ${isCompleted ? "bg-gold text-gold-foreground" : "bg-secondary"} ${isCurrent ? "ring-2 ring-gold/30 ring-offset-2 ring-offset-card" : ""}`}>
+                              {isCompleted && <CheckCircle2 className="h-3 w-3" />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="relative mt-[-10px] mx-auto h-[2px] w-[calc(100%-2rem)] bg-secondary rounded-full overflow-hidden z-0">
+                      <div className="h-full bg-gold transition-all" style={{ width: `${(["pending", "confirmed", "shipped", "delivered"].indexOf(o.status) / 3) * 100}%` }} />
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
                   <span className="text-sm text-muted-foreground">{t("cart.total")}</span>
                   <div className="flex items-center gap-3">

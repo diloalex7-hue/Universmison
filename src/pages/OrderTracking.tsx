@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatDA } from "@/lib/store";
-import { Search, Package } from "lucide-react";
+import { Search, Package, CheckCircle2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const steps = ["pending", "confirmed", "shipped", "delivered"];
@@ -21,10 +21,17 @@ export default function OrderTracking() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true); setErr(""); setOrder(null);
-    const { data } = await supabase.from("orders").select("*, order_items(*)").eq("order_number", num.trim().toUpperCase()).maybeSingle();
+    const trimmed = num.trim();
+    const { data, error } = await supabase.from("orders").select("*, order_items(*)").ilike("order_number", trimmed).maybeSingle();
     setLoading(false);
-    if (!data) setErr(t("order.notfound"));
-    else setOrder(data);
+    if (error) {
+      console.error("Tracking error:", error);
+      setErr(t("order.notfound"));
+    } else if (!data) {
+      setErr(t("order.notfound"));
+    } else {
+      setOrder(data);
+    }
   };
 
   return (
@@ -52,20 +59,46 @@ export default function OrderTracking() {
           </div>
 
           <div className="mt-8">
-            <div className="flex justify-between">
-              {steps.map((s, i) => {
-                const done = steps.indexOf(order.status) >= i;
-                return (
-                  <div key={s} className="flex flex-col items-center text-center">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${done ? "bg-gradient-gold text-gold-foreground" : "bg-secondary text-muted-foreground"}`}>{i + 1}</div>
-                    <div className="mt-2 text-[11px] capitalize text-muted-foreground">{t("status." + s)}</div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="relative mt-[-30px] mb-8 mx-auto h-[2px] w-[80%] bg-secondary">
-              <div className="h-full bg-gradient-gold transition-all" style={{ width: `${(steps.indexOf(order.status) / (steps.length - 1)) * 100}%` }} />
-            </div>
+            {order.status === "cancelled" ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+                  <X className="h-8 w-8 text-destructive" />
+                </div>
+                <h3 className="mt-4 font-serif text-xl text-destructive">{t("status.cancelled")}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{t("status.cancelled.desc")}</p>
+              </div>
+            ) : (
+              <div>
+                <div className="flex justify-between relative z-10">
+                  {steps.map((s, i) => {
+                    const done = steps.indexOf(order.status) >= i;
+                    const current = order.status === s;
+                    return (
+                      <div key={s} className="flex flex-col items-center text-center w-1/4">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold transition-all duration-500 shadow-sm
+                          ${done ? "bg-gradient-gold text-gold-foreground" : "bg-secondary text-muted-foreground"}
+                          ${current ? "ring-4 ring-gold/20 scale-110" : ""}
+                        `}>
+                          {done ? <CheckCircle2 className="h-5 w-5" /> : i + 1}
+                        </div>
+                        <div className={`mt-3 text-xs font-medium ${done ? "text-foreground" : "text-muted-foreground"}`}>
+                          {t("status." + s)}
+                        </div>
+                        <div className="mt-1 hidden sm:block text-[10px] text-muted-foreground max-w-[120px] px-2 leading-tight">
+                          {t(`status.${s}.desc`)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="relative mt-[-55px] sm:mt-[-70px] mb-12 sm:mb-16 mx-auto h-[3px] w-[75%] bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-gold transition-all duration-1000 ease-in-out" 
+                    style={{ width: `${(steps.indexOf(order.status) / (steps.length - 1)) * 100}%` }} 
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

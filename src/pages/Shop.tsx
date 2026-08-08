@@ -20,7 +20,7 @@ export default function Shop() {
   const q = params.get("q") || "";
   const { t, lang } = useI18n();
   const [sort, setSort] = useState<Sort>("all");
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 25000]);
+  const [maxPrice, setMaxPrice] = useState<number>(25000);
 
   useEffect(() => { document.title = "Boutique — Univers Maison"; }, []);
 
@@ -48,20 +48,15 @@ export default function Shop() {
   });
 
   const filtered = useMemo(
-    () => products.filter((p: any) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]),
-    [products, priceRange]
+    () => products.filter((p: any) => Number(p.price) <= maxPrice),
+    [products, maxPrice]
   );
 
   return (
     <div className="container-luxe py-10">
       {/* Header */}
       <div className="mb-8">
-        <nav className="text-xs text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">{t("nav.home")}</Link>
-          <span className="mx-2">/</span>
-          <Link to="/shop" className="hover:text-foreground">{t("nav.shop")}</Link>
-          {currentCat && (<><span className="mx-2">/</span><span className="text-foreground">{localized(currentCat, "name", lang)}</span></>)}
-        </nav>
+
         <h1 className="mt-3 font-serif text-4xl md:text-5xl">
           {currentCat ? localized(currentCat, "name", lang) : q ? `« ${q} »` : t("nav.shop")}
         </h1>
@@ -71,7 +66,7 @@ export default function Shop() {
       <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
         {/* Filters desktop */}
         <aside className="hidden lg:block">
-          <FilterPanel categories={categories} currentSlug={categorySlug} priceRange={priceRange} setPriceRange={setPriceRange} />
+          <FilterPanel categories={categories} currentSlug={categorySlug} maxPrice={maxPrice} setMaxPrice={setMaxPrice} />
         </aside>
 
         <div>
@@ -82,7 +77,7 @@ export default function Shop() {
                 <Button variant="outline" size="sm"><SlidersHorizontal className="h-4 w-4" /> {t("filter.title")}</Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-80">
-                <FilterPanel categories={categories} currentSlug={categorySlug} priceRange={priceRange} setPriceRange={setPriceRange} />
+                <FilterPanel categories={categories} currentSlug={categorySlug} maxPrice={maxPrice} setMaxPrice={setMaxPrice} />
               </SheetContent>
             </Sheet>
 
@@ -123,7 +118,7 @@ export default function Shop() {
   );
 }
 
-function FilterPanel({ categories, currentSlug, priceRange, setPriceRange }: any) {
+function FilterPanel({ categories, currentSlug, maxPrice, setMaxPrice }: any) {
   const { t, lang } = useI18n();
   return (
     <div className="space-y-8">
@@ -142,10 +137,10 @@ function FilterPanel({ categories, currentSlug, priceRange, setPriceRange }: any
       </div>
       <div>
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gold-deep">{t("filter.price")}</h3>
-        <Slider value={priceRange} onValueChange={(v) => setPriceRange(v as [number, number])} min={0} max={25000} step={500} className="my-4" />
+        <Slider value={[maxPrice]} onValueChange={(v) => setMaxPrice(v[0])} min={0} max={25000} step={500} className="my-4" />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{priceRange[0].toLocaleString()} DA</span>
-          <span>{priceRange[1].toLocaleString()} DA</span>
+          <span>0 DA</span>
+          <span>{maxPrice.toLocaleString()} DA</span>
         </div>
       </div>
     </div>

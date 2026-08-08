@@ -6,11 +6,11 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
 
   useEffect(() => {
     // Stage 1: Logo fade in and scale
-    const timer1 = setTimeout(() => setStage(1), 80);
+    const timer1 = setTimeout(() => setStage(1), 150);
     // Stage 2: Logo fade out
-    const timer2 = setTimeout(() => setStage(2), 1200);
+    const timer2 = setTimeout(() => setStage(2), 2200);
     // Finish: Remove splash
-    const timer3 = setTimeout(() => onFinish(), 1800);
+    const timer3 = setTimeout(() => onFinish(), 3000);
 
     return () => {
       clearTimeout(timer1);
@@ -31,7 +31,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
       </div>
 
       <div className={cn(
-        "relative flex flex-col items-center transition-all duration-700 transform",
+        "relative flex flex-col items-center transition-all duration-1000 transform",
         stage === 0 ? "opacity-0 scale-95 translate-y-4" : 
         stage === 1 ? "opacity-100 scale-100 translate-y-0" : 
         "opacity-0 scale-105 -translate-y-4"
@@ -45,26 +45,29 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
           />
         </div>
         
-        <h1 className="font-serif text-5xl font-medium tracking-tight text-white mb-2">
-          Univers <span className="text-gold">Maison</span>
+        <h1 className="font-serif text-5xl font-medium tracking-tight text-white mb-2 flex gap-3">
+          <span>Univers</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold via-white to-gold bg-[length:200%_auto] animate-shimmer-sweep">
+            Maison
+          </span>
         </h1>
         
         <div className="flex items-center gap-4">
-          <div className={cn("h-px bg-gold/30 transition-all duration-700 delay-300", stage >= 1 ? "w-16" : "w-0")} />
+          <div className={cn("h-px bg-gold/30 transition-all duration-1000 delay-300", stage >= 1 ? "w-16" : "w-0")} />
           <span className={cn(
-            "text-[10px] uppercase tracking-[0.5em] text-gold/60 font-medium transition-all duration-700 delay-500",
+            "text-[10px] uppercase tracking-[0.5em] text-gold/60 font-medium transition-all duration-1000 delay-500",
             stage >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
           )}>
             Art de la Table
           </span>
-          <div className={cn("h-px bg-gold/30 transition-all duration-700 delay-300", stage >= 1 ? "w-16" : "w-0")} />
+          <div className={cn("h-px bg-gold/30 transition-all duration-1000 delay-300", stage >= 1 ? "w-16" : "w-0")} />
         </div>
       </div>
 
       {/* Progress line */}
       <div className="absolute bottom-24 left-1/2 w-48 -translate-x-1/2 overflow-hidden rounded-full h-[1px] bg-white/5">
         <div className={cn(
-          "h-full bg-gradient-to-r from-transparent via-gold to-transparent shadow-gold-sm transition-all duration-[1100ms] ease-in-out",
+          "h-full bg-gradient-to-r from-transparent via-gold to-transparent shadow-gold-sm transition-all duration-1000 ease-in-out",
           stage >= 1 ? "w-full translate-x-0" : "w-0 -translate-x-full"
         )} />
       </div>

@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ShieldCheck, Lock } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getWilayas, getCommunesByWilayaId } from "algeria-locations";
+import { ShieldCheck, Lock, Ticket, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -29,11 +31,32 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ full_name: "", phone: "", email: "", address: "", city: "", wilaya: "", notes: "" });
+  const [wilayaId, setWilayaId] = useState<number | null>(null);
+  const [shippingRates, setShippingRates] = useState<Record<string, number>>({});
+
+  const wilayas = getWilayas();
+  const communes = wilayaId ? getCommunesByWilayaId(wilayaId) : [];
+
+  // Coupon state
+  const [promoCode, setPromoCode] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string; discount_type: "percentage" | "fixed"; discount_value: number; id: string;
+  } | null>(null);
 
   useEffect(() => { document.title = "Checkout — Univers Maison"; }, []);
   useEffect(() => {
     if (user?.email) setForm(f => ({ ...f, email: user.email! }));
   }, [user]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("site_settings").select("shipping_rates").limit(1).maybeSingle();
+      if (data && data.shipping_rates) {
+        setShippingRates(data.shipping_rates as Record<string, number>);
+      }
+    })();
+  }, []);
 
   if (items.length === 0) {
     return <div className="container-luxe py-20 text-center">
@@ -48,8 +71,53 @@ export default function Checkout() {
     </div>;
   }
 
-  const shipping = subtotal > 15000 ? 0 : 700;
-  const total = subtotal + shipping;
+  const getShippingCost = () => {
+    if (subtotal > 15000) return 0; // Free shipping threshold
+    if (form.wilaya && shippingRates[form.wilaya] !== undefined) {
+      return shippingRates[form.wilaya];
+    }
+    return 700; // Default fallback
+  };
+  
+  const shipping = getShippingCost();
+  const discount = appliedCoupon
+    ? appliedCoupon.discount_type === "percentage"
+      ? Math.round(subtotal * appliedCoupon.discount_value / 100)
+      : appliedCoupon.discount_value
+    : 0;
+  const total = Math.max(0, subtotal + shipping - discount);
+
+  const applyCoupon = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    const { data, error } = await supabase
+      .from("coupons" as any)
+      .select("*")
+      .eq("code", promoCode.trim().toUpperCase())
+      .eq("is_active", true)
+      .maybeSingle();
+    setPromoLoading(false);
+    const coupon = data as any;
+    if (error || !coupon) { toast.error(t("coupon.invalid")); return; }
+    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) { toast.error(t("coupon.invalid")); return; }
+    if (coupon.max_uses !== null && coupon.current_uses >= coupon.max_uses) { toast.error(t("coupon.invalid")); return; }
+    if (coupon.min_order_amount && subtotal < coupon.min_order_amount) {
+      toast.error(`${t("coupon.min_order")} ${formatDA(coupon.min_order_amount)}`);
+      return;
+    }
+    setAppliedCoupon({
+      code: coupon.code,
+      discount_type: coupon.discount_type,
+      discount_value: coupon.discount_value,
+      id: coupon.id,
+    });
+    toast.success(t("coupon.applied"));
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setPromoCode("");
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,8 +137,15 @@ export default function Checkout() {
         subtotal,
         shipping,
         total,
+        coupon_code: appliedCoupon?.code || null,
+        discount: discount || 0,
       }).select().single();
       if (error) throw error;
+
+      // Increment coupon usage
+      if (appliedCoupon) {
+        await supabase.from("coupons" as any).update({ current_uses: (await supabase.from("coupons" as any).select("current_uses").eq("id", appliedCoupon.id).single()).data?.current_uses + 1 }).eq("id", appliedCoupon.id);
+      }
 
       const orderItems = items.map((i: any) => ({
         order_id: order.id,
@@ -106,8 +181,46 @@ export default function Checkout() {
 
           <Section title={t("checkout.shipping")}>
             <Field label={t("checkout.address")} className="md:col-span-2"><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required /></Field>
-            <Field label={t("checkout.city")}><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required /></Field>
-            <Field label={t("checkout.wilaya")}><Input value={form.wilaya} onChange={(e) => setForm({ ...form, wilaya: e.target.value })} required /></Field>
+            <Field label={t("checkout.wilaya")}>
+              <Select 
+                value={wilayaId?.toString()} 
+                onValueChange={(val) => {
+                  const id = parseInt(val, 10);
+                  const w = wilayas.find(x => x.id === id);
+                  setWilayaId(id);
+                  setForm({ ...form, wilaya: w ? w.name : "", city: "" });
+                }}
+              >
+                <SelectTrigger className="w-full bg-secondary/20">
+                  <SelectValue placeholder="Sélectionner une wilaya" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {wilayas.map(w => (
+                    <SelectItem key={w.id} value={w.id.toString()}>
+                      {w.code} - {lang === 'ar' ? w.name_ar : w.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label={t("checkout.city")}>
+              <Select 
+                value={form.city} 
+                onValueChange={(val) => setForm({ ...form, city: val })}
+                disabled={!wilayaId}
+              >
+                <SelectTrigger className="w-full bg-secondary/20">
+                  <SelectValue placeholder="Sélectionner une commune" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {communes.map(c => (
+                    <SelectItem key={c.id} value={c.name}>
+                      {lang === 'ar' ? c.name_ar : c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
             <Field label={t("checkout.notes")} className="md:col-span-2"><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} /></Field>
           </Section>
 
@@ -116,6 +229,39 @@ export default function Checkout() {
               <input type="radio" defaultChecked className="accent-gold" />
               <div><div className="font-medium">{t("checkout.cod")}</div><div className="text-xs text-muted-foreground">{t("checkout.cod.desc")}</div></div>
             </label>
+
+            {/* Promo Code */}
+            <div className="md:col-span-2 mt-2">
+              <Label className="mb-1.5 block text-xs uppercase tracking-wider text-muted-foreground">
+                <Ticket className="inline h-3.5 w-3.5 mr-1" />{t("coupon.code")}
+              </Label>
+              {appliedCoupon ? (
+                <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5">
+                  <Ticket className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <div className="flex-1">
+                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-sm">{appliedCoupon.code}</span>
+                    <span className="text-xs text-emerald-600 ml-2">
+                      −{appliedCoupon.discount_type === "percentage" ? `${appliedCoupon.discount_value}%` : formatDA(appliedCoupon.discount_value)}
+                    </span>
+                  </div>
+                  <button type="button" onClick={removeCoupon} className="text-emerald-600 hover:text-red-500 transition-colors">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder="EX: SUMMER25"
+                    className="font-mono uppercase"
+                  />
+                  <Button type="button" variant="outline" onClick={applyCoupon} disabled={promoLoading || !promoCode.trim()}>
+                    {promoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("coupon.apply")}
+                  </Button>
+                </div>
+              )}
+            </div>
           </Section>
         </div>
 
@@ -139,6 +285,12 @@ export default function Checkout() {
           <dl className="mt-5 space-y-2 border-t border-border pt-5 text-sm">
             <div className="flex justify-between"><dt className="text-muted-foreground">{t("cart.subtotal")}</dt><dd>{formatDA(subtotal)}</dd></div>
             <div className="flex justify-between"><dt className="text-muted-foreground">{t("cart.shipping")}</dt><dd>{shipping === 0 ? t("common.free") : formatDA(shipping)}</dd></div>
+            {discount > 0 && (
+              <div className="flex justify-between text-emerald-600">
+                <dt className="flex items-center gap-1"><Ticket className="h-3.5 w-3.5" /> {t("coupon.discount")}</dt>
+                <dd className="font-medium">−{formatDA(discount)}</dd>
+              </div>
+            )}
             <div className="flex items-baseline justify-between pt-3 border-t border-border">
               <dt className="font-serif text-lg">{t("cart.total")}</dt>
               <dd className="font-serif text-2xl font-semibold">{formatDA(total)}</dd>

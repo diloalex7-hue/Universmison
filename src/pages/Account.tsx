@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useAdmin } from "@/lib/useAdmin";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
   User, Package, Heart, LogOut, Info, HelpCircle, 
-  Phone, Truck, RotateCcw, Mail, MapPin, Lock 
+  Phone, Truck, RotateCcw, Mail, MapPin, Lock, Settings 
 } from "lucide-react";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
@@ -17,6 +18,7 @@ import { Capacitor } from "@capacitor/core";
 export default function Account() {
   const { t } = useI18n();
   const { user, signOut, loading } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const [form, setForm] = useState({ 
     full_name: "", 
@@ -99,6 +101,9 @@ export default function Account() {
             <SidebarLink to="/account" icon={User} active>{t("acc.profile")}</SidebarLink>
             <SidebarLink to="/account/orders" icon={Package}>{t("acc.orders")}</SidebarLink>
             <SidebarLink to="/account/favorites" icon={Heart}>{t("acc.favorites")}</SidebarLink>
+            {isAdmin && (
+              <SidebarLink to="/admin" icon={Settings}>Admin Console</SidebarLink>
+            )}
           </div>
           
           {isNative && (
@@ -112,7 +117,14 @@ export default function Account() {
             </div>
           )}
 
-          <button onClick={signOut} className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive transition-luxe hover:bg-destructive/5">
+          <button 
+            onClick={() => {
+              if (window.confirm(t("auth.confirm_logout") || "Are you sure you want to log out?")) {
+                signOut();
+              }
+            }} 
+            className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive transition-luxe hover:bg-destructive/5"
+          >
             <LogOut className="h-4 w-4" /> {t("nav.signout")}
           </button>
         </aside>

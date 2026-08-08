@@ -28,8 +28,11 @@ export default function AdminCategories() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const path = `categories/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("product-images").upload(path, file);
+    const { compressImage } = await import("@/lib/imageCompressor");
+    const compressed = await compressImage(file);
+    const ext = compressed.name.split(".").pop() || "webp";
+    const path = `categories/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("product-images").upload(path, compressed);
     if (error) { setUploading(false); return toast.error(error.message); }
     const { data } = supabase.storage.from("product-images").getPublicUrl(path);
     set("image_url", data.publicUrl);

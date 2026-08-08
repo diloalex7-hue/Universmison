@@ -78,7 +78,10 @@ function SignInForm() {
         <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required className="mt-1.5 h-11" />
       </div>
       <div>
-        <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("auth.password")}</Label>
+        <div className="flex items-center justify-between">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("auth.password")}</Label>
+          <Link to="/reset-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">{t("auth.forgot")}</Link>
+        </div>
         <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required className="mt-1.5 h-11" />
       </div>
       <Button type="submit" disabled={loading} variant="luxe" size="lg" className="w-full">{loading ? "..." : t("auth.signin")}</Button>

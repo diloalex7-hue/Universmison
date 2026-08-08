@@ -1,16 +1,54 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useFavorites } from "@/lib/store";
+import { useFavorites, formatDA } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import ProductCard from "@/components/shop/ProductCard";
-import { Heart } from "lucide-react";
+import { Heart, TrendingDown } from "lucide-react";
 
 export default function Favorites() {
   const { user } = useAuth();
   const { items } = useFavorites();
   const { t } = useI18n();
+  const [droppedPrices, setDroppedPrices] = useState<Record<string, string>>({});
+
   useEffect(() => { document.title = "Favoris — Univers Maison"; }, []);
+
+  useEffect(() => {
+    if (!items.length) return;
+    try {
+      const storedStr = localStorage.getItem("fav_prices") || "{}";
+      const stored = JSON.parse(storedStr);
+      const drops: Record<string, string> = {};
+      let changed = false;
+
+      items.forEach((f: any) => {
+        const id = f.product.id;
+        const currentPrice = Number(f.product.price);
+        
+        if (stored[id]) {
+          const oldPrice = Number(stored[id]);
+          if (currentPrice < oldPrice) {
+            drops[id] = formatDA(oldPrice);
+          } else if (currentPrice > oldPrice) {
+            // Price went up, update stored
+            stored[id] = currentPrice;
+            changed = true;
+          }
+        } else {
+          // New favorite, store current price
+          stored[id] = currentPrice;
+          changed = true;
+        }
+      });
+
+      if (Object.keys(drops).length > 0) setDroppedPrices(drops);
+      if (changed) localStorage.setItem("fav_prices", JSON.stringify(stored));
+      
+    } catch (e) {
+      console.error(e);
+    }
+  }, [items]);
 
   if (!user) return <div className="container-luxe py-20 text-center"><Link to="/auth" className="underline">{t("common.signin_required")}</Link></div>;
 
@@ -24,7 +62,21 @@ export default function Favorites() {
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4 lg:gap-6">
-          {items.map((f: any) => <ProductCard key={f.id} product={f.product} />)}
+          {items.map((f: any) => (
+            <div key={f.id} className="relative group">
+              <ProductCard product={f.product} />
+              {droppedPrices[f.product.id] && (
+                <div className="absolute -top-3 -right-2 z-10 flex flex-col items-end">
+                  <span className="flex items-center gap-1 rounded-full bg-red-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-md animate-bounce">
+                    <TrendingDown className="h-3 w-3" /> {t("fav.price_drop")}
+                  </span>
+                  <span className="mt-1 rounded bg-black/70 px-1.5 py-0.5 text-[9px] text-white/90 shadow-sm">
+                    {t("fav.price_was")} {droppedPrices[f.product.id]}
+                  </span>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

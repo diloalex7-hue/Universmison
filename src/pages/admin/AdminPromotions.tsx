@@ -70,12 +70,14 @@ export default function AdminPromotions() {
     }
 
     setUploading(true);
-    const ext = file.name.split(".").pop() || "png";
+    const { compressImage } = await import("@/lib/imageCompressor");
+    const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 1080, quality: 0.85 });
+    const ext = compressed.name.split(".").pop() || "webp";
     const fileName = `promo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
     const { error } = await supabase.storage
       .from("product-images")
-      .upload(`promotions/${fileName}`, file, { cacheControl: "3600", upsert: false });
+      .upload(`promotions/${fileName}`, compressed, { cacheControl: "3600", upsert: false });
 
     if (error) {
       setUploading(false);

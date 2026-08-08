@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Save, Loader2, ImageIcon, Upload, X, LayoutTemplate,
-  Plus, Trash2, Pencil, GripVertical, Eye, EyeOff, ChevronUp, ChevronDown,
+  Plus, Trash2, Pencil, ChevronUp, ChevronDown,
 } from "lucide-react";
 
 interface SlideData {
@@ -67,11 +67,11 @@ export default function AdminHero() {
 
   const fetchSlides = async () => {
     const { data, error } = await supabase
-      .from("hero_settings")
+      .from("hero_settings" as any)
       .select("*")
       .order("display_order", { ascending: true });
     if (error) console.error("Load slides error:", error);
-    setSlides((data as any[]) ?? []);
+    setSlides((data as any as SlideData[]) ?? []);
     setLoading(false);
   };
 
@@ -82,9 +82,11 @@ export default function AdminHero() {
     if (!file.type.startsWith("image/")) { toast.error("Sélectionnez une image"); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error("Max 5 Mo"); return; }
     setUploading(true);
-    const ext = file.name.split(".").pop() || "png";
+    const { compressImage } = await import("@/lib/imageCompressor");
+    const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 1080, quality: 0.85 });
+    const ext = compressed.name.split(".").pop() || "webp";
     const fileName = `hero-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error } = await supabase.storage.from("product-images").upload(`hero/${fileName}`, file, { cacheControl: "3600", upsert: false });
+    const { error } = await supabase.storage.from("product-images").upload(`hero/${fileName}`, compressed, { cacheControl: "3600", upsert: false });
     if (error) { setUploading(false); toast.error(error.message); return; }
     const { data: u } = supabase.storage.from("product-images").getPublicUrl(`hero/${fileName}`);
     setEditingSlide(prev => prev ? { ...prev, image_url: u.publicUrl } : prev);
@@ -102,19 +104,20 @@ export default function AdminHero() {
     setSaving(true);
 
     const { id, ...payload } = editingSlide;
-    // Clean payload — remove undefined
     const cleanPayload: Record<string, any> = {};
     for (const [k, v] of Object.entries(payload)) {
-      cleanPayload[k] = v ?? "";
+      if (v !== undefined) {
+        cleanPayload[k] = v === "" ? null : v;
+      }
     }
 
     let error;
     if (isNew) {
       cleanPayload.display_order = slides.length;
-      const res = await supabase.from("hero_settings").insert(cleanPayload);
+      const res = await supabase.from("hero_settings" as any).insert(cleanPayload);
       error = res.error;
     } else {
-      const res = await supabase.from("hero_settings").update(cleanPayload).eq("id", id);
+      const res = await supabase.from("hero_settings" as any).update(cleanPayload).eq("id", id);
       error = res.error;
     }
 
@@ -137,7 +140,7 @@ export default function AdminHero() {
   const deleteSlide = async (slideId: string) => {
     if (!confirm("Supprimer ce slide ?")) return;
     setDeletingId(slideId);
-    const { error } = await supabase.from("hero_settings").delete().eq("id", slideId);
+    const { error } = await supabase.from("hero_settings" as any).delete().eq("id", slideId);
     setDeletingId(null);
     if (error) { toast.error("Erreur : " + error.message); return; }
     queryClient.invalidateQueries({ queryKey: ["home-hero-slides"] });
@@ -159,7 +162,7 @@ export default function AdminHero() {
 
     // Persist new order
     const promises = updated.map((s, i) =>
-      supabase.from("hero_settings").update({ display_order: i }).eq("id", s.id)
+      supabase.from("hero_settings" as any).update({ display_order: i }).eq("id", s.id)
     );
     await Promise.all(promises);
     queryClient.invalidateQueries({ queryKey: ["home-hero-slides"] });

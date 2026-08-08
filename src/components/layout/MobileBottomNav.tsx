@@ -6,9 +6,10 @@ import { useAuth } from "@/lib/auth";
 import { Capacitor } from "@capacitor/core";
 
 export default function MobileBottomNav() {
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const { count } = useCart();
   const { user } = useAuth();
+  const isRTL = dir === "rtl";
 
   const navItems = [
     { to: "/", label: t("nav.home"), icon: Home },
@@ -21,6 +22,7 @@ export default function MobileBottomNav() {
   return (
     <nav 
       className="fixed bottom-0 left-0 right-0 w-full z-[9999] flex md:hidden items-center justify-between px-6 sm:px-8 border-t border-neutral-200/40 dark:border-neutral-800/40 bg-background pt-2 pb-[calc(max(env(safe-area-inset-bottom,0px),36px)+6px)] shadow-[0_-8px_32px_rgba(0,0,0,0.05)]"
+      dir="ltr"
       style={{ left: 0, right: 0 }}
     >
       {navItems.map((item, index) => {

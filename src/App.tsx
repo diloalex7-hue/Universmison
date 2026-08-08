@@ -36,12 +36,29 @@ import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminPages from "./pages/admin/AdminPages";
 import AdminHero from "./pages/admin/AdminHero";
 import AdminMessages from "./pages/admin/AdminMessages";
+import AdminCoupons from "./pages/admin/AdminCoupons";
+import AdminShipping from "./pages/admin/AdminShipping";
+import ResetPassword from "./pages/ResetPassword";
+import UpdatePassword from "./pages/UpdatePassword";
 
 import ScrollToTop from "@/components/ScrollToTop";
 import BackButtonHandler from "@/components/BackButtonHandler";
 import SplashScreen from "@/components/SplashScreen";
 
 const queryClient = new QueryClient();
+
+import { useAuth } from "@/lib/auth";
+import { Notifications } from "@/lib/notifications";
+
+function GlobalNotificationHandler() {
+  const { user } = useAuth();
+  useEffect(() => {
+    if (user?.id) {
+      Notifications.checkOrderStatusChanges(user.id);
+    }
+  }, [user]);
+  return null;
+}
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -52,6 +69,7 @@ const App = () => {
         <TooltipProvider>
         <I18nProvider>
           <AuthProvider>
+            <GlobalNotificationHandler />
             {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
             {!showSplash && (
             <>
@@ -72,6 +90,8 @@ const App = () => {
                 <Route path="messages" element={<AdminMessages />} />
                 <Route path="pages" element={<AdminPages />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="shipping" element={<AdminShipping />} />
               </Route>
               <Route path="*" element={
                 <Layout>
@@ -86,6 +106,8 @@ const App = () => {
                     <Route path="/order/confirm/:id" element={<OrderConfirm />} />
                     <Route path="/track" element={<OrderTracking />} />
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/update-password" element={<UpdatePassword />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/account/orders" element={<Orders />} />
                     <Route path="/account/favorites" element={<Favorites />} />
