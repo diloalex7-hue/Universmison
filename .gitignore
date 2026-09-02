@@ -28,10 +28,13 @@ dist-ssr
 
 # Capacitor / Mobile
 android/
-ios/
+
+# APK files (too large for git)
+*.apk
 
 # Testing
 coverage/
 
 # OS Files
 Thumbs.db
+

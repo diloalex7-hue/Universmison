@@ -4,6 +4,11 @@ const config: CapacitorConfig = {
   appId: 'com.universmaison.app',
   appName: 'Univers Maison',
   webDir: 'dist',
+  ios: {
+    contentInset: 'automatic',
+    allowsLinkPreview: true,
+    scrollEnabled: true,
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 0,
