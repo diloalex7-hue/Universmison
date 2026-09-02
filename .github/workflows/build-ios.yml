@@ -34,24 +34,19 @@ jobs:
     - name: Sync Capacitor iOS
       run: npx cap sync ios
 
-    - name: Resolve Swift Package Dependencies
-      run: |
-        cd ios/App
-        xcodebuild -resolvePackageDependencies -project App.xcodeproj || true
-
     - name: Build iOS App with Xcode
       run: |
         cd ios/App
-        xcodebuild build \
+        xcodebuild clean build \
           -project App.xcodeproj \
           -scheme App \
           -destination 'generic/platform=iOS Simulator' \
           -configuration Debug \
           -derivedDataPath build \
-          CODE_SIGNING_ALLOWED=NO \
-          CODE_SIGNING_REQUIRED=NO \
           CODE_SIGN_IDENTITY="" \
-          COMPILER_INDEX_STORE_ENABLE=NO
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          ONLY_ACTIVE_ARCH=NO
 
     - name: Verify build output
       run: |
