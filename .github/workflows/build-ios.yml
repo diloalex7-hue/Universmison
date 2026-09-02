@@ -34,14 +34,19 @@ jobs:
     - name: Sync Capacitor iOS
       run: npx cap sync ios
 
+    - name: Fix Package.swift slashes for macOS
+      run: |
+        sed -i '' 's|\\\\|/|g' ios/App/CapApp-SPM/Package.swift 2>/dev/null || true
+        sed -i '' 's|\\|/|g' ios/App/CapApp-SPM/Package.swift 2>/dev/null || true
+
     - name: Build iOS App with Xcode
       run: |
         cd ios/App
         xcodebuild build \
           -project App.xcodeproj \
           -scheme App \
+          -sdk iphonesimulator \
           -configuration Debug \
-          -destination 'generic/platform=iOS Simulator' \
           -derivedDataPath build \
           CODE_SIGNING_ALLOWED=NO \
           CODE_SIGNING_REQUIRED=NO \
